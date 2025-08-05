@@ -55,21 +55,24 @@ Image FaceDetector::drawBoundingBoxOnFrame(cv::Mat& frame) {
 
     return image_and_ROI;
 }
-Image FaceDetector::printPredictionTextToFrame( Image& image_and_ROI, std::vector<std::string>& emotion_prediction) {
-
+Image FaceDetector::printPredictionTextToFrame(Image& image_and_ROI, std::vector<std::string>& emotion_prediction) {
     cv::Mat img = image_and_ROI.getFrame();
     
     if (faces.size() > 0) { 
-        for (int i=0; i < faces.size(); i++) {
+        for (int i = 0; i < faces.size(); i++) {
             cv::Rect r = faces[i];
 
-            // Write text prediction on bounding box
-             cv::putText(img, emotion_prediction[i], cv::Point(r.x, r.y - 10), cv::FONT_HERSHEY_COMPLEX, 1.0, colors[i % colors.size()], 3);
+            // Testo con lo stesso colore del riquadro
+            cv::putText(img,
+                        emotion_prediction[i],
+                        cv::Point(r.x, r.y - 10),
+                        cv::FONT_HERSHEY_COMPLEX,
+                        1.0,
+                        colors[i % colors.size()],
+                        3);
         }
     }
 
     image_and_ROI.setFrame(img);
-
     return image_and_ROI;
-
 }
