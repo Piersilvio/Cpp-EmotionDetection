@@ -64,13 +64,7 @@ Image FaceDetector::printPredictionTextToFrame( Image& image_and_ROI, std::vecto
             cv::Rect r = faces[i];
 
             // Write text prediction on bounding box
-            cv::putText(img, //target image
-                        emotion_prediction[i], //text - will take the output of the model.inference()
-                        cv::Point(r.x, r.y-10), //top-left position of box
-                        cv::FONT_HERSHEY_DUPLEX,
-                        1.0,
-                        CV_RGB(118, 185, 0), //font color
-                        2);
+             cv::putText(img, emotion_prediction[i], cv::Point(r.x, r.y - 10), cv::FONT_HERSHEY_COMPLEX, 1.0, colors[i % colors.size()], 3);
         }
     }
 
