@@ -24,16 +24,6 @@ void FaceDetector::detectFace(cv::Mat& frame) {
 Image FaceDetector::drawBoundingBoxOnFrame(cv::Mat& frame) {
     Image image_and_ROI;
 
-    std::vector<cv::Scalar> colors = {
-        cv::Scalar(255, 0, 0),     // Blue
-        cv::Scalar(0, 255, 0),     // Green
-        cv::Scalar(0, 0, 255),     // Red
-        cv::Scalar(255, 255, 0),   // Cyan
-        cv::Scalar(255, 0, 255),   // Magenta
-        cv::Scalar(0, 255, 255),   // Yellow
-        cv::Scalar(128, 0, 128)    // Purple
-    };
-
     if (faces.size() > 0) {
         for (int i = 0; i < faces.size(); i++) {
             cv::Rect r = faces[i];
