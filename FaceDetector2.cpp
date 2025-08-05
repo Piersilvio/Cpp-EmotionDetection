@@ -49,18 +49,22 @@ Image FaceDetector::printPredictionTextToFrame(Image& image_and_ROI, std::vector
     cv::Mat img = image_and_ROI.getFrame();
     
     if (faces.size() > 0) { 
-        for (int i = 0; i < faces.size(); i++) {
-            cv::Rect r = faces[i];
-
-            // Testo con lo stesso colore del riquadro
-            cv::putText(img,
-                        emotion_prediction[i],
-                        cv::Point(r.x, r.y - 10),
-                        cv::FONT_HERSHEY_COMPLEX,
-                        1.0,
-                        colors[i % colors.size()],
-                        3);
-        }
+          for (int i = 0; i < faces.size(); i++) {
+              cv::Rect r = faces[i];
+          
+              // Converti in maiuscolo
+              std::string emotion_upper = emotion_prediction[i];
+              std::transform(emotion_upper.begin(), emotion_upper.end(), emotion_upper.begin(), ::toupper);
+          
+              // Testo con font elegante e meno spesso
+              cv::putText(img,
+                          emotion_upper,
+                          cv::Point(r.x, r.y - 10),
+                          cv::FONT_HERSHEY_COMPLEX,
+                          1.0,                          // scala
+                          colors[i % colors.size()],    // stesso colore del riquadro
+                          1);                           // spessore ridotto
+          }
     }
 
     image_and_ROI.setFrame(img);
