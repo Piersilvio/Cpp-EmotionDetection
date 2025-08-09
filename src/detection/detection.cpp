@@ -9,7 +9,7 @@ using namespace cv;
 std::vector<Rect> detected_faces;
 
 
-Image draw_face_box(Mat& frame) {
+Image draw_face_box(Mat& input_image) {
 
     Image image_and_ROI;
 
@@ -19,17 +19,17 @@ Image draw_face_box(Mat& frame) {
             Rect r = detected_faces[i];
 
             // draw rectangle around face
-            rectangle(frame,
+            rectangle(input_image,
                         Point(r.x, r.y),
                         Point(r.x + r.width, r.y + r.height),
                         Scalar(255, 0, 0), 3, 8, 0);
 
             Rect roi_coord(r.x, r.y,r.width,r.height);
 
-            Mat roi_image = frame(roi_coord);
+            Mat roi_image = input_image(roi_coord);
 
             image_and_ROI.setROI(roi_image);
-            image_and_ROI.setPic(frame);
+            image_and_ROI.setPic(input_image);
         }
 
     }   
@@ -38,35 +38,11 @@ Image draw_face_box(Mat& frame) {
 
 }
 
-Image print_predicted_label( Image& image_and_ROI, std::vector<std::string>& emotion_prediction) {
 
-    Mat img = image_and_ROI.getPic();
-    
-    if (detected_faces.size() > 0) { 
-        for (int i=0; i < detected_faces.size(); i++) {
-            Rect r = detected_faces[i];
-
-            // Write text prediction on bounding box
-            putText(img, //target image
-                        emotion_prediction[i], //text - will take the output of the model.inference()
-                        Point(r.x, r.y-10), //top-left position of box
-                        FONT_HERSHEY_DUPLEX,
-                        1.0,
-                        CV_RGB(118, 185, 0), //font color
-                        2);
-        }
-    }
-
-    image_and_ROI.setPic(img);
-
-    return image_and_ROI;
-
-}
-
-void detect_face(Mat& frame) {
+void detect_face(Mat& input_image) {
 
     Mat gray_img;
-    cvtColor( frame, gray_img, COLOR_BGR2GRAY );
+    cvtColor( input_image, gray_img, COLOR_BGR2GRAY );
     equalizeHist( gray_img, gray_img );
     
     // Face classifier
@@ -79,4 +55,8 @@ void detect_face(Mat& frame) {
     cascade.detectMultiScale(gray_img, detected_faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(100, 100));
 
 
+}
+
+std::vector<Rect> get_detected_faces(){
+    return detected_faces;
 }

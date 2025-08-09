@@ -1,5 +1,5 @@
-#ifndef FACEDETECTOR_H
-#define FACEDETECTOR_H
+#ifndef FACEDETECTION_H
+#define FACEDETECTION_H
 
 #include <opencv2/opencv.hpp>
 
@@ -8,12 +8,11 @@
 extern const std::string FACE_DETECTOR_MODEL_PATH;
 
 // Detect faces
-extern void detect_face(cv::Mat& frame);
+extern void detect_face(cv::Mat& input_image);
     
 // Draw a box sorrounding the detected face
-Image draw_face_box(cv::Mat& frame);
+Image draw_face_box(cv::Mat& input_image);
 
-// Print the predicted emotion label
-Image print_predicted_label( Image& image_and_ROI, std::vector<std::string>& emotion_prediction);
+std::vector<cv::Rect> get_detected_faces(void);
 
 #endif

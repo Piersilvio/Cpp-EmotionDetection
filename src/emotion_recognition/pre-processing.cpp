@@ -8,9 +8,8 @@ using namespace cv;
 void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
 
     Mat processed_image;
-    std::vector<cv::Mat>  preprocessed_ROI;
+    std::vector<Mat>  preprocessed_ROI;
 
-        // Controllo se ci sono ROI
     if (roi_image.empty()) {
         std::cerr << "No ROI found, skip preprocessing." << std::endl;
         image_and_ROI.setPreprocessedROI(preprocessed_ROI);

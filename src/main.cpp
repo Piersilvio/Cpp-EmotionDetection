@@ -30,7 +30,6 @@ int main()
     
     Mat image = imread(image_path);    
 
-    Model model(TENSORFLOW_MODEL_PATH);
     Image image_and_ROI;
 
     namedWindow(window_name);
@@ -47,10 +46,12 @@ int main()
     if (roi_image.size()>0) {
         // Preprocess image ready for model
         preprocessROI(roi_image, image_and_ROI);
+
         // Make Prediction
-        vector<string> emotion_prediction = model.predict(image_and_ROI);
+        vector<Rect> detected_faces = get_detected_faces();
+        vector<string> emotion_prediction = predict(image_and_ROI, TENSORFLOW_MODEL_PATH);
         // Add prediction text to the output video image
-        image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction);
+        image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction, detected_faces);
     }
 
     Mat output_image = image_and_ROI.getPic();
