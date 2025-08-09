@@ -6,66 +6,64 @@
 #include <algorithm>
 #include <mutex>
 
-#include "FaceDetector.h"
-#include "Image.h"
-#include "Model.h"
+#include "detection/detection.h"
+#include "emotion_recognition/emotion_recognition.h"
 
-// Update this with the path to your opencv directory
-const std::string FACE_DETECTOR_MODEL_PATH = "../model/haarcascade_frontalface_alt2.xml";
-const std::string TENSORFLOW_MODEL_PATH = "../model/tensorflow_model.pb";
-const std::string APP_NAME = "Facial Emotion Recognition";
+#include "image/Image.h"
 
-const std::string IMAGE_PATH = "../images/surprise_5.jpg";
+using namespace std;
+using namespace cv;
+
+
+const string FACE_DETECTOR_MODEL_PATH = "../model/haarcascade_frontalface_alt2.xml";
+const string TENSORFLOW_MODEL_PATH = "../model/tensorflow_model.pb";
+
+const string window_name = "Face detection and emotion recognition";
+
+const string image_path = "../images/surprise_5.jpg";
+//const string image_path = "../images/happy_4.jpg";
+
+
 
 int main()
 {
-    // Initialise video frame that will be read from the camera
-    cv::Mat frame = cv::imread(IMAGE_PATH);
-    // Initialise all the required objects
+    
+    Mat image = imread(image_path);    
+
     Model model(TENSORFLOW_MODEL_PATH);
-    FaceDetector face_detector;
     Image image_and_ROI;
 
-    //create a window with the window name
-    cv::namedWindow(APP_NAME);
+    namedWindow(window_name);
 
+    // Detect faces applying Viola-Jones algorithm
+    detect_face(image);
 
-        //Run Face Detection and draw bounding box
-        face_detector.detectFace(frame);
+    // Draw a bounding box corresponding to the detected face 
+    image_and_ROI = draw_face_box(image);
 
-        // Draw bounding box to frame
-        image_and_ROI = face_detector.drawBoundingBoxOnFrame(frame);
-
-        // Get Image ROIs
-        std::vector<cv::Mat> roi_image = image_and_ROI.getROI();
+    // Get Image ROIs
+    vector<Mat> roi_image = image_and_ROI.getROI();
     
-        if (roi_image.size()>0) {
-            // Preprocess image ready for model
-            image_and_ROI.preprocessROI();
-            // Make Prediction
-            std::vector<std::string> emotion_prediction = model.predict(image_and_ROI);
-            // Add prediction text to the output video frame
-            image_and_ROI = face_detector.printPredictionTextToFrame(image_and_ROI, emotion_prediction);
-        }
+    if (roi_image.size()>0) {
+        // Preprocess image ready for model
+        preprocessROI(roi_image, image_and_ROI);
+        // Make Prediction
+        vector<string> emotion_prediction = model.predict(image_and_ROI);
+        // Add prediction text to the output video image
+        image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction);
+    }
 
-        cv::Mat output_frame = image_and_ROI.getFrame();
+    Mat output_image = image_and_ROI.getPic();
 
-        if (!output_frame.empty()) {
-            imshow (APP_NAME, output_frame);
-        } else {
-            // if the output frame is empty (ie. the facedetector didn't detect anything), just display the original image
-            imshow (APP_NAME, frame);
-        }
-
-        // wait for for 10 ms until any key is pressed.  
-        // if the 'Esc' key is pressed, break the program loop
-        cv::waitKey(0);
-        //if (cv::waitKey(100) == 27)
-        //{
-          //  std::cout << "Esc key is pressed by user. Stopping the program" << std::endl;
-        //}
-
-    
+    if (!output_image.empty()) {
+        imshow (window_name, output_image);
+    } 
+    else {
+       // if the output image is empty (ie. the facedetector didn't detect anything), just display the original image
+       imshow (window_name, image);
+    }
+    waitKey(0);
+     
     return 0;
 
 }
