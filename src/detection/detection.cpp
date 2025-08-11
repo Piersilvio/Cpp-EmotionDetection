@@ -8,6 +8,17 @@ using namespace cv;
 //Face classifier output
 std::vector<Rect> detected_faces;
 
+//Colors
+std::vector<cv::Scalar> colors = {
+cv::Scalar(255, 0, 0),     // Blue
+cv::Scalar(0, 255, 0),     // Green
+cv::Scalar(0, 0, 255),     // Red
+cv::Scalar(255, 255, 0),   // Cyan
+cv::Scalar(255, 0, 255),   // Magenta
+cv::Scalar(0, 255, 255),   // Yellow
+cv::Scalar(128, 0, 128)    // Purple
+};
+
 
 Image draw_face_box(Mat& input_image) {
 
@@ -18,18 +29,17 @@ Image draw_face_box(Mat& input_image) {
         for (int i=0; i < detected_faces.size(); i++) {
             Rect r = detected_faces[i];
 
-            // draw rectangle around face
-            rectangle(input_image,
-                        Point(r.x, r.y),
-                        Point(r.x + r.width, r.y + r.height),
-                        Scalar(255, 0, 0), 3, 8, 0);
+             // A color for each box
+            cv::Scalar color = colors[i % colors.size()];
+
+            cv::rectangle(input_image, Point(r.x, r.y), Point(r.x + r.width, r.y + r.height), color, 5, LINE_AA);
 
             Rect roi_coord(r.x, r.y,r.width,r.height);
 
             Mat roi_image = input_image(roi_coord);
 
-            image_and_ROI.setROI(roi_image);
-            image_and_ROI.setPic(input_image);
+            image_and_ROI.set_ROI(roi_image);
+            image_and_ROI.set_pic(input_image);
         }
 
     }   
@@ -56,6 +66,7 @@ void detect_face(Mat& input_image) {
 
 
 }
+
 
 std::vector<Rect> get_detected_faces(){
     return detected_faces;

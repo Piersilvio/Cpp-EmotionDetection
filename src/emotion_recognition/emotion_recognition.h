@@ -16,6 +16,8 @@
     // Constructor reads in a pretrained (in python) tensorflow graph and weights (.pb file contains everything we need about the model)
     // Also initialises the mapping from class id to the string label (ie. happy, angry, sad etc)  
 
+
+
 // Model inference function takes image input and outputs the prediction label and the probability
 std::vector<std::string> predict(Image& image, std::string model_filename);
 

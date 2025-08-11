@@ -4,26 +4,26 @@
 
 using namespace cv;
 
-Mat Image::getPic() {
+Mat Image::get_pic() {
     return this->_pic;
 }
 
-void Image::setPic(Mat& pic) {
+void Image::set_pic(Mat& pic) {
     this->_pic = pic;
 }
 
-std::vector<Mat> Image::getROI() {
+std::vector<Mat> Image::get_ROI() {
     return this->_roi_image;
 }
 
-void Image::setROI(Mat& roi) {
+void Image::set_ROI(Mat& roi) {
     this->_roi_image.push_back(roi);
 }
 
-std::vector<Mat> Image::getPreprocessedROI() {
+std::vector<Mat> Image::get_preprocessed_ROI() {
     return this->preprocessed_ROI;
 }
 
-void Image::setPreprocessedROI(std::vector<Mat> prepr_roi) {
+void Image::set_preprocessed_ROI(std::vector<Mat> prepr_roi) {
     this->preprocessed_ROI = prepr_roi;
 }

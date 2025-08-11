@@ -24,7 +24,6 @@ const string image_path = "../images/surprise_5.jpg";
 //const string image_path = "../images/happy_4.jpg";
 
 
-
 int main()
 {
     
@@ -41,7 +40,7 @@ int main()
     image_and_ROI = draw_face_box(image);
 
     // Get Image ROIs
-    vector<Mat> roi_image = image_and_ROI.getROI();
+    vector<Mat> roi_image = image_and_ROI.get_ROI();
     
     if (roi_image.size()>0) {
         // Preprocess image ready for model
@@ -50,11 +49,11 @@ int main()
         // Make Prediction
         vector<Rect> detected_faces = get_detected_faces();
         vector<string> emotion_prediction = predict(image_and_ROI, TENSORFLOW_MODEL_PATH);
-        // Add prediction text to the output video image
+        // Add prediction text to the output image
         image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction, detected_faces);
     }
 
-    Mat output_image = image_and_ROI.getPic();
+    Mat output_image = image_and_ROI.get_pic();
 
     if (!output_image.empty()) {
         imshow (window_name, output_image);

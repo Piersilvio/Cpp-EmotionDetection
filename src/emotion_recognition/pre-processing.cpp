@@ -12,7 +12,7 @@ void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
 
     if (roi_image.empty()) {
         std::cerr << "No ROI found, skip preprocessing." << std::endl;
-        image_and_ROI.setPreprocessedROI(preprocessed_ROI);
+        image_and_ROI.set_preprocessed_ROI(preprocessed_ROI);
         return;
     }
 
@@ -39,7 +39,7 @@ void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
         }
     }
     
-    image_and_ROI.setPreprocessedROI(preprocessed_ROI); 
+    image_and_ROI.set_preprocessed_ROI(preprocessed_ROI); 
     
     return;
 

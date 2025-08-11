@@ -14,12 +14,24 @@ std::map<int, std::string> classid_to_string = {
                          {4, "Sad"}, 
                          {5, "Surprise"}, 
                          {6, "Neutral"}} ;  // Create a map from class id to the class labels
+                         
+//Label colors
+std::vector<cv::Scalar> label_colors = {
+cv::Scalar(255, 0, 0),     // Blue
+cv::Scalar(0, 255, 0),     // Green
+cv::Scalar(0, 0, 255),     // Red
+cv::Scalar(255, 255, 0),   // Cyan
+cv::Scalar(255, 0, 255),   // Magenta
+cv::Scalar(0, 255, 255),   // Yellow
+cv::Scalar(128, 0, 128)    // Purple
+};
+
 
 
 std::vector<std::string> predict(Image& image, std::string model_filename) {
 
     // this takes the region of interest image and then runs model inference
-    std::vector<cv::Mat> roi_image = image.getPreprocessedROI();
+    std::vector<cv::Mat> roi_image = image.get_preprocessed_ROI();
     
     cv::dnn::Net network = dnn::readNet(model_filename); // Load the tensorflow model 
     std::vector<std::string> emotion_prediction;
@@ -64,24 +76,27 @@ std::vector<std::string> predict(Image& image, std::string model_filename) {
 
 Image print_predicted_label(Image& image_and_ROI, std::vector<std::string>& emotion_prediction, std::vector<Rect> detected_faces) {
 
-    Mat img = image_and_ROI.getPic();
+    Mat img = image_and_ROI.get_pic();
     
     if (detected_faces.size() > 0) { 
         for (int i=0; i < detected_faces.size(); i++) {
             Rect r = detected_faces[i];
 
-            // Write text prediction on bounding box
-            putText(img, //target image
-                        emotion_prediction[i], //text - will take the output of the model.inference()
-                        Point(r.x, r.y-10), //top-left position of box
-                        FONT_HERSHEY_DUPLEX,
-                        1.0,
-                        CV_RGB(118, 185, 0), //font color
-                        2);
+              // Convert to upper case
+              std::string emotion_upper = emotion_prediction[i];
+              std::transform(emotion_upper.begin(), emotion_upper.end(), emotion_upper.begin(), ::toupper);
+          
+              cv::putText(img,
+                          emotion_upper,
+                          cv::Point(r.x, r.y - 10),
+                          cv::FONT_HERSHEY_COMPLEX,
+                          1.0,                          // scale
+                          label_colors[i % label_colors.size()],    // same color of the bounding box
+                          1);   
         }
     }
 
-    image_and_ROI.setPic(img);
+    image_and_ROI.set_pic(img);
 
     return image_and_ROI;
 

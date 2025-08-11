@@ -7,6 +7,7 @@
 
 extern const std::string FACE_DETECTOR_MODEL_PATH;
 
+
 // Detect faces
 extern void detect_face(cv::Mat& input_image);
     
