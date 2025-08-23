@@ -19,20 +19,6 @@ const string FACE_DETECTOR_MODEL_PATH = "../models/haarcascade_frontalface_alt2.
 const string TENSORFLOW_MODEL_PATH = "../models/tensorflow_model.pb";
 const string window_name = "Face detection and emotion recognition";
 
-cv::Mat resize_with_aspect_ratio(const cv::Mat& img, int max_width, int max_height) {
-    int w = img.cols;
-    int h = img.rows;
-    float scale_w = (float)max_width / w;
-    float scale_h = (float)max_height / h;
-    float scale = std::min(scale_w, scale_h);  // usa il min per non superare limiti
-
-    int new_w = static_cast<int>(w * scale);
-    int new_h = static_cast<int>(h * scale);
-
-    cv::Mat resized;
-    cv::resize(img, resized, cv::Size(new_w, new_h));
-    return resized;
-}
 
 // Funzione per leggere bounding box YOLO-style
 vector<Rect> read_ground_truth(const string& label_file, int img_width, int img_height) {
@@ -84,36 +70,54 @@ int main() {
         return -1;
     }
 
+    // Stampa lista immagini
     cout << "Scegli una o più immagini da analizzare (es. 0 2 5):" << endl;
-    for (size_t i = 0; i < image_files.size(); i++) {
+    for (size_t i = 0; i < image_files.size(); i++)
         cout << i << ": " << image_files[i] << endl;
+
+    // Lettura indici robusta
+    vector<int> choices;
+    while (true) {
+        cout << "Inserisci gli indici separati da spazio: ";
+        string line;
+        getline(cin, line);
+
+        if (line.empty()) {
+            cout << "Nessun input inserito. Riprova." << endl;
+            continue;
+        }
+
+        istringstream ss(line);
+        int num;
+        choices.clear();
+        bool has_invalid = false;
+
+        while (ss >> num) {
+            if (num >= 0 && num < (int)image_files.size()) {
+                choices.push_back(num);
+            } else {
+                cout << "Indice " << num << " non valido, ignorato." << endl;
+                has_invalid = true;
+            }
+        }
+
+        if (!choices.empty()) {
+            if (has_invalid)
+                cout << "Procedo con gli indici validi inseriti." << endl;
+            break;
+        } else {
+            cout << "Nessun indice valido inserito. Riprova." << endl;
+        }
     }
 
-    // Lettura indici multipli
-    cin.ignore();
-    string line;
-    getline(cin, line);
-    istringstream ss(line);
-    vector<int> choices;
-    int num;
-    while (ss >> num) {
-        if (num >= 0 && num < (int)image_files.size()) choices.push_back(num);
-        else cout << "Indice " << num << " non valido, ignorato." << endl;
-    }
+    cout << "Indici selezionati: ";
+    for (int i : choices) cout << i << " ";
+    cout << endl;
 
     namedWindow(window_name);
 
     for (int choice : choices) {
         Mat image = imread(image_files[choice]);
-
-        if (image.empty()) {
-            cout << "Errore nel caricamento dell'immagine." << endl;
-            continue;
-        }
-
-        // Ridimensiona a massimo 800x600 (puoi cambiare le dimensioni)
-        image = resize_with_aspect_ratio(image, 800, 600);
-
         if (image.empty()) {
             cout << "Errore nel caricamento dell'immagine " << image_files[choice] << endl;
             continue;
