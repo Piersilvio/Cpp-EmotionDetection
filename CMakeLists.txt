@@ -11,9 +11,10 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(EmotionDetectionProject
         src/main.cpp
-        src/FaceDetector.cpp
-        src/Image.cpp
-        src/Model.cpp)
+        src/emotion_recognition/emotion_recognition.cpp
+        src/image/Image.cpp
+        src/detection/detection.cpp
+        src/emotion_recognition/pre-processing.cpp)
 
 
 
