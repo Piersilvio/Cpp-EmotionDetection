@@ -114,7 +114,7 @@ int main() {
     for (int i : choices) cout << i << " ";
     cout << endl;
 
-    namedWindow(window_name);
+    namedWindow(window_name, cv::WINDOW_NORMAL);
 
     for (int choice : choices) {
         Mat image = imread(image_files[choice]);
