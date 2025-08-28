@@ -58,42 +58,83 @@ void detect_face(Mat& input_image) {
         return;
     }
 
-    std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, all_faces;
+    std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, faces_rotated, all_faces;
 
-    // frontali
-    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 6, 0, Size(50,50));
+    // --- Frontali standard ---
+    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 5, 0, Size(50,50));
 
-    // profilo destro
-    profile.detectMultiScale(gray_img, faces_profile, 1.1, 6, 0, Size(55,55));
+    // --- Profilo destro ---
+    profile.detectMultiScale(gray_img, faces_profile, 1.1, 6, 0, Size(60,60));
 
-    // profilo sinistro = flip immagine
+    // --- Profilo sinistro (flip) ---
     Mat flipped;
-    flip(gray_img, flipped, 1); // flip orizzontale
-    profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 6, 0, Size(55,55));
-
-    // correzione coordinate dei rettangoli flippati
+    flip(gray_img, flipped, 1);
+    profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 6, 0, Size(60,60));
     for (auto& r : faces_profile_flipped) {
         r.x = gray_img.cols - r.x - r.width;
     }
 
-    // unisci tutti
+    // --- Rotazioni per volti inclinati ---
+    std::vector<int> angles = {-15, 15};
+    for (int angle : angles) {
+        Point2f center(gray_img.cols/2.0F, gray_img.rows/2.0F);
+        Mat rot_mat = getRotationMatrix2D(center, angle, 1.0);
+
+        Mat rotated;
+        warpAffine(gray_img, rotated, rot_mat, gray_img.size(), INTER_LINEAR, BORDER_REPLICATE);
+
+        std::vector<Rect> temp_faces;
+        frontal.detectMultiScale(rotated, temp_faces, 1.1, 6, 0, Size(50,50));
+
+        for (auto& r : temp_faces) {
+            std::vector<Point2f> pts = { Point2f((float)r.x,(float)r.y), Point2f((float)(r.x+r.width),(float)(r.y+r.height)) };
+            Mat inv_rot;
+            invertAffineTransform(rot_mat, inv_rot);
+            transform(pts, pts, inv_rot);
+
+            int x = std::max(0, (int)std::min(pts[0].x, pts[1].x));
+            int y = std::max(0, (int)std::min(pts[0].y, pts[1].y));
+            int w = std::min(gray_img.cols - x, (int)std::abs(pts[1].x - pts[0].x));
+            int h = std::min(gray_img.rows - y, (int)std::abs(pts[1].y - pts[0].y));
+
+            if (w > 0 && h > 0)
+                faces_rotated.push_back(Rect(x,y,w,h));
+        }
+    }
+
+    // --- Unisci tutti ---
     all_faces.insert(all_faces.end(), faces_frontal.begin(), faces_frontal.end());
     all_faces.insert(all_faces.end(), faces_profile.begin(), faces_profile.end());
     all_faces.insert(all_faces.end(), faces_profile_flipped.begin(), faces_profile_flipped.end());
+    all_faces.insert(all_faces.end(), faces_rotated.begin(), faces_rotated.end());
+    
+    double min_area = 0.01 * gray_img.total();  // 0.2% dell'immagine
+    double max_area = 0.25  * gray_img.total();  // 25% dell'immagine
+    for (auto it = all_faces.begin(); it != all_faces.end();) {
+        double area = it->area();
+        if (area < min_area || area > max_area) it = all_faces.erase(it);
+        else ++it;
+    }
 
-    // rimuovi duplicati
+    // --- Filtri geometrici: scarta box con rapporti non plausibili ---
+    for (auto it = all_faces.begin(); it != all_faces.end();) {
+        double ratio = (double)it->width / it->height;
+        if (ratio < 0.6 || ratio > 1.6) it = all_faces.erase(it);
+        else ++it;
+    }
+
+    // --- Rimuovi duplicati con NMS più restrittiva (IoU < 0.4) ---
     detected_faces.clear();
     for (const auto& f : all_faces) {
         bool keep = true;
         for (const auto& d : detected_faces) {
-            if (IoU(f, d) > 0.5f) {
-                keep = false;
-                break;
-            }
+            if (IoU(f, d) > 0.4f) { keep = false; break; }
         }
         if (keep) detected_faces.push_back(f);
     }
 }
+
+
 
 
 std::vector<Rect> get_detected_faces() {
