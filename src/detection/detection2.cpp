@@ -75,7 +75,7 @@ void detect_face(Mat& input_image) {
     }
 
     // --- Rotazioni per volti inclinati ---
-    std::vector<int> angles = {-15, 15};
+    std::vector<int> angles = {-10, 10};
     for (int angle : angles) {
         Point2f center(gray_img.cols/2.0F, gray_img.rows/2.0F);
         Mat rot_mat = getRotationMatrix2D(center, angle, 1.0);
@@ -108,8 +108,8 @@ void detect_face(Mat& input_image) {
     all_faces.insert(all_faces.end(), faces_profile_flipped.begin(), faces_profile_flipped.end());
     all_faces.insert(all_faces.end(), faces_rotated.begin(), faces_rotated.end());
     
-    double min_area = 0.01 * gray_img.total();  // 0.2% dell'immagine
-    double max_area = 0.25  * gray_img.total();  // 25% dell'immagine
+    double min_area = 0.0018 * gray_img.total();  // 0.2% dell'immagine
+    double max_area = 0.60  * gray_img.total();  // 25% dell'immagine
     for (auto it = all_faces.begin(); it != all_faces.end();) {
         double area = it->area();
         if (area < min_area || area > max_area) it = all_faces.erase(it);
@@ -122,13 +122,26 @@ void detect_face(Mat& input_image) {
         if (ratio < 0.6 || ratio > 1.6) it = all_faces.erase(it);
         else ++it;
     }
+    // --- Filtro box interni ---
+    for (size_t i = 0; i < all_faces.size(); ++i) {
+        bool erased = false;
+        for (size_t j = 0; j < all_faces.size(); ++j) {
+            if (i != j && IoU(all_faces[i], all_faces[j]) > 0.3 && all_faces[i].area() < all_faces[j].area()) {
+                all_faces.erase(all_faces.begin() + i);
+                erased = true;
+                break;
+            }
+        }
+        if (!erased) ++i;
+    }
+
 
     // --- Rimuovi duplicati con NMS più restrittiva (IoU < 0.4) ---
     detected_faces.clear();
     for (const auto& f : all_faces) {
         bool keep = true;
         for (const auto& d : detected_faces) {
-            if (IoU(f, d) > 0.4f) { keep = false; break; }
+            if (IoU(f, d) > 0.20f) { keep = false; break; }
         }
         if (keep) detected_faces.push_back(f);
     }
