@@ -18,17 +18,6 @@ std::vector<cv::Scalar> colors = {
     cv::Scalar(128, 0, 128)
 };
 
-// IoU per rimuovere duplicati
-float IoU(const Rect& a, const Rect& b) {
-    int x1 = std::max(a.x, b.x);
-    int y1 = std::max(a.y, b.y);
-    int x2 = std::min(a.x + a.width, b.x + b.width);
-    int y2 = std::min(a.y + a.height, b.y + b.height);
-    int interArea = std::max(0, x2 - x1) * std::max(0, y2 - y1);
-    int unionArea = a.area() + b.area() - interArea;
-    return unionArea > 0 ? (float)interArea / unionArea : 0.0f;
-}
-
 Image draw_face_box(Mat& input_image) {
     Image image_and_ROI;
     for (size_t i = 0; i < detected_faces.size(); i++) {
