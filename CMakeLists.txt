@@ -14,7 +14,8 @@ add_executable(EmotionDetectionProject
         src/emotion_recognition/emotion_recognition.cpp
         src/image/Image.cpp
         src/detection/detection.cpp
-        src/emotion_recognition/pre-processing.cpp)
+        src/emotion_recognition/pre-processing.cpp
+        src/metrics/metrics.cpp)
 
 
 
