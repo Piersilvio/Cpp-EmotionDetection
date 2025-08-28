@@ -61,7 +61,7 @@ void detect_face(Mat& input_image) {
     std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, faces_rotated, all_faces;
 
     // --- Frontali standard ---
-    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 5, 0, Size(50,50));
+    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 5, 0, Size(55,55));
 
     // --- Profilo destro ---
     profile.detectMultiScale(gray_img, faces_profile, 1.1, 6, 0, Size(60,60));
@@ -107,6 +107,7 @@ void detect_face(Mat& input_image) {
     all_faces.insert(all_faces.end(), faces_profile.begin(), faces_profile.end());
     all_faces.insert(all_faces.end(), faces_profile_flipped.begin(), faces_profile_flipped.end());
     all_faces.insert(all_faces.end(), faces_rotated.begin(), faces_rotated.end());
+
     
     double min_area = 0.0018 * gray_img.total();  // 0.2% dell'immagine
     double max_area = 0.60  * gray_img.total();  // 25% dell'immagine
@@ -134,7 +135,6 @@ void detect_face(Mat& input_image) {
         }
         if (!erased) ++i;
     }
-
 
     // --- Rimuovi duplicati con NMS più restrittiva (IoU < 0.4) ---
     detected_faces.clear();
