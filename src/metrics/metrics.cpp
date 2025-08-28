@@ -1,5 +1,34 @@
 #include "metrics.h"
+#include "metrics.h"
+#include <fstream>   
+#include <sstream>
+#include <iostream>  
+
 using namespace cv;
+
+// Funzione per leggere bounding box YOLO-style
+std::vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_width, int img_height) {
+    std::vector<cv::Rect> boxes;
+    std::ifstream infile(label_file);  // ora compilatore sa cos’è ifstream
+    if (!infile.is_open()) return boxes;
+
+    std::string line;
+    while (getline(infile, line)) {
+        std::istringstream ss(line);
+        int class_id;
+        float x_center, y_center, w, h;
+        ss >> class_id >> x_center >> y_center >> w >> h;
+
+        int x1 = static_cast<int>((x_center - w/2.0f) * img_width);
+        int y1 = static_cast<int>((y_center - h/2.0f) * img_height);
+        int width = static_cast<int>(w * img_width);
+        int height = static_cast<int>(h * img_height);
+
+        boxes.push_back(cv::Rect(x1, y1, width, height));
+    }
+    return boxes;
+}
+
 
 // IoU
 float IoU(const Rect& a, const Rect& b) {
@@ -45,3 +74,4 @@ void compute_metrics(const std::vector<cv::Rect>& predicted,
     precision = tp + fp > 0 ? (float)tp / (tp + fp) : 0.0f;
     recall = tp + fn > 0 ? (float)tp / (tp + fn) : 0.0f;
 }
+
