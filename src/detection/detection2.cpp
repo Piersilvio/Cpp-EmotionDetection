@@ -48,7 +48,6 @@ void detect_face(Mat& input_image) {
     cvtColor(input_image, gray_img, COLOR_BGR2GRAY);
     equalizeHist(gray_img, gray_img);
 
-    // Carica frontal + profile cascade
     CascadeClassifier frontal, profile;
     if (!frontal.load("../models/haarcascade_frontalface_alt2.xml")) {
         std::cerr << "Errore: frontal cascade non caricato\n";
@@ -59,16 +58,30 @@ void detect_face(Mat& input_image) {
         return;
     }
 
-    std::vector<Rect> faces_frontal, faces_profile, all_faces;
+    std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, all_faces;
 
-    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 5, 0, Size(50,50));
-    profile.detectMultiScale(gray_img, faces_profile, 1.1, 5, 0, Size(50,50));
+    // frontali
+    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 6, 0, Size(50,50));
 
-    // Unisci risultati
+    // profilo destro
+    profile.detectMultiScale(gray_img, faces_profile, 1.1, 6, 0, Size(55,55));
+
+    // profilo sinistro = flip immagine
+    Mat flipped;
+    flip(gray_img, flipped, 1); // flip orizzontale
+    profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 6, 0, Size(55,55));
+
+    // correzione coordinate dei rettangoli flippati
+    for (auto& r : faces_profile_flipped) {
+        r.x = gray_img.cols - r.x - r.width;
+    }
+
+    // unisci tutti
     all_faces.insert(all_faces.end(), faces_frontal.begin(), faces_frontal.end());
     all_faces.insert(all_faces.end(), faces_profile.begin(), faces_profile.end());
+    all_faces.insert(all_faces.end(), faces_profile_flipped.begin(), faces_profile_flipped.end());
 
-    // Rimuovi duplicati usando IoU
+    // rimuovi duplicati
     detected_faces.clear();
     for (const auto& f : all_faces) {
         bool keep = true;
@@ -81,6 +94,7 @@ void detect_face(Mat& input_image) {
         if (keep) detected_faces.push_back(f);
     }
 }
+
 
 std::vector<Rect> get_detected_faces() {
     return detected_faces;
