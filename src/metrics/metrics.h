@@ -1,6 +1,10 @@
-#pragma once
-#include <opencv2/opencv.hpp>
 #include <vector>
+#include <string>
+#include <opencv2/opencv.hpp>
+
+using std::vector;
+using std::string;
+using cv::Rect;
 
 // Intersection over Union
 float IoU(const cv::Rect& a, const cv::Rect& b);
@@ -14,3 +18,5 @@ void compute_metrics(const std::vector<cv::Rect>& predicted,
                      int& tp,
                      int& fp,
                      int& fn);
+
+vector<Rect> read_ground_truth(const string& label_file, int img_width, int img_height);
