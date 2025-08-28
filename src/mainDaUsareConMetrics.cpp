@@ -23,28 +23,6 @@ const string window_name = "Face detection and emotion recognition";
 
 
 
-// Funzione per leggere bounding box YOLO-style
-vector<Rect> read_ground_truth(const string& label_file, int img_width, int img_height) {
-    vector<Rect> boxes;
-    ifstream infile(label_file);
-    if (!infile.is_open()) return boxes;
-
-    string line;
-    while (getline(infile, line)) {
-        istringstream ss(line);
-        int class_id;
-        float x_center, y_center, w, h;
-        ss >> class_id >> x_center >> y_center >> w >> h;
-
-        int x1 = static_cast<int>((x_center - w/2.0) * img_width);
-        int y1 = static_cast<int>((y_center - h/2.0) * img_height);
-        int width = static_cast<int>(w * img_width);
-        int height = static_cast<int>(h * img_height);
-
-        boxes.push_back(Rect(x1, y1, width, height));
-    }
-    return boxes;
-}
 
 // Disegna i bounding box ground truth
 void draw_ground_truth(Mat& img, const vector<Rect>& boxes) {
