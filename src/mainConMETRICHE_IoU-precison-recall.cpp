@@ -9,6 +9,7 @@
 #include "detection/detection.h"
 #include "emotion_recognition/emotion_recognition.h"
 #include "image/Image.h"
+#include "metrics/metrics.h"
 
 
 namespace fs = std::filesystem;
@@ -19,49 +20,6 @@ const string FACE_DETECTOR_MODEL_PATH = "../models/haarcascade_frontalface_alt2.
 const string TENSORFLOW_MODEL_PATH = "../models/tensorflow_model.pb";
 const string window_name = "Face detection and emotion recognition";
 
-// --- Funzione IoU ---
-inline float IoU(const Rect& a, const Rect& b) {
-    int x1 = max(a.x, b.x);
-    int y1 = max(a.y, b.y);
-    int x2 = min(a.x + a.width, b.x + b.width);
-    int y2 = min(a.y + a.height, b.y + b.height);
-    int interArea = max(0, x2 - x1) * max(0, y2 - y1);
-    int unionArea = a.area() + b.area() - interArea;
-    return unionArea > 0 ? (float)interArea / unionArea : 0.0f;
-}
-
-// --- Funzione per precision e recall ---
-void compute_metrics(const std::vector<cv::Rect>& predicted,
-                     const std::vector<cv::Rect>& gt,
-                     float iou_thresh,
-                     float& precision,
-                     float& recall,
-                     int& tp,
-                     int& fp,
-                     int& fn) {
-
-    tp = 0; fp = 0; fn = 0;
-    std::vector<bool> gt_matched(gt.size(), false);
-
-    for (const auto& p : predicted) {
-        bool matched = false;
-        for (size_t i = 0; i < gt.size(); i++) {
-            if (!gt_matched[i] && IoU(p, gt[i]) >= iou_thresh) {
-                tp++;
-                gt_matched[i] = true;
-                matched = true;
-                break;
-            }
-        }
-        if (!matched) fp++;
-    }
-
-    for (bool m : gt_matched)
-        if (!m) fn++;
-
-    precision = tp + fp > 0 ? (float)tp / (tp + fp) : 0.0f;
-    recall = tp + fn > 0 ? (float)tp / (tp + fn) : 0.0f;
-}
 
 
 
