@@ -119,6 +119,10 @@ int main() {
 
     namedWindow(window_name, cv::WINDOW_NORMAL);
 
+    // Contatori globali per volti rilevati con emozione corretta
+    int total_detected_faces = 0;
+    int total_correct_emotions = 0;
+
     for (int choice : choices) {
         Mat image = imread(image_files[choice]);
         if (image.empty()) {
@@ -179,19 +183,21 @@ int main() {
             cout << "Volti predetti e confronto con GT (FP esclusi):" << endl;
 
             for (size_t i = 0; i < predicted_faces.size(); i++) {
-                // Calcola IoU massimo con GT
                 float best_iou = 0.0f;
                 for (const auto& g : gt_boxes) {
                     float iou = IoU(predicted_faces[i], g);
                     if (iou > best_iou) best_iou = iou;
                 }
 
-                // Considera solo volti correttamente rilevati
                 if (best_iou > iou_threshold) {
                     string pred_norm = normalize_label(clean_pred_label(emotion_prediction[i]));
                     cout << "  Predizione: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << endl;
                     total++;
-                    if (pred_norm == gt_norm) correct++;
+                    total_detected_faces++; // conteggio globale
+                    if (pred_norm == gt_norm) {
+                        correct++;
+                        total_correct_emotions++; // conteggio globale
+                    }
                 }
             }
 
@@ -206,6 +212,17 @@ int main() {
 
         cout << "Premi un tasto per passare all'immagine successiva..." << endl;
         waitKey(0);
+    }
+
+    // Statistiche globali
+    if (total_detected_faces > 0) {
+        float global_accuracy = (float)total_correct_emotions / total_detected_faces;
+        cout << "\n=== Statistiche globali sulle immagini selezionate ===" << endl;
+        cout << "Volti correttamente rilevati con emozione corretta: "
+             << total_correct_emotions << "/" << total_detected_faces
+             << " (Accuracy globale: " << global_accuracy << ")" << endl;
+    } else {
+        cout << "Nessun volto correttamente rilevato nelle immagini selezionate." << endl;
     }
 
     return 0;
