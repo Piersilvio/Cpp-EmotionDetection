@@ -3,6 +3,8 @@
 #include <fstream>   
 #include <sstream>
 #include <iostream>  
+#include <filesystem>
+namespace fs = std::filesystem;
 
 using namespace cv;
 
@@ -75,3 +77,22 @@ void compute_metrics(const std::vector<cv::Rect>& predicted,
     recall = tp + fn > 0 ? (float)tp / (tp + fn) : 0.0f;
 }
 
+string clean_pred_label(const string& raw_label) {
+    size_t pos = raw_label.find(":");
+    if (pos != string::npos) return raw_label.substr(0, pos);
+    return raw_label;
+}
+
+string extract_gt_label(const string& filename) {
+    string stem = fs::path(filename).stem().string();
+    size_t pos = stem.find("(");
+    if (pos != string::npos) stem = stem.substr(0, pos);
+    return stem;
+}
+
+string normalize_label(const string& s) {
+    string out = s;
+    out.erase(remove_if(out.begin(), out.end(), ::isspace), out.end());
+    transform(out.begin(), out.end(), out.begin(), ::tolower);
+    return out;
+}
