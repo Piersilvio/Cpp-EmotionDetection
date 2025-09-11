@@ -20,13 +20,15 @@ const string FACE_DETECTOR_MODEL_PATH = "../models/haarcascade_frontalface_alt2.
 const string TENSORFLOW_MODEL_PATH = "../models/tensorflow_model.pb";
 const string window_name = "Face detection and emotion recognition";
 
+// Draws the ground-truth bounding boxes (red rectangles) on an image.
 void draw_ground_truth(Mat& img, const vector<Rect>& boxes) {
     for (const auto& box : boxes) {
         rectangle(img, box, Scalar(0, 0, 255), 2);
     }
 }
 
-// --- Funzione per caricare i file immagine dalla cartella ---
+// Loads all image file paths from a given folder and
+// returns a vector of file paths.
 vector<string> load_images(const string& folder) {
     vector<string> image_files;
     for (const auto& entry : fs::directory_iterator(folder)) {
@@ -40,7 +42,8 @@ vector<string> load_images(const string& folder) {
     return image_files;
 }
 
-// --- Funzione per selezionare le immagini da processare ---
+// Lets the user select which images to process by typing their indices.
+// Returns a vector of chosen indices.
 vector<int> select_images(const vector<string>& image_files) {
     cout << "Scegli una o più immagini da analizzare (es. 0 2 5):" << endl;
     for (size_t i = 0; i < image_files.size(); i++)
@@ -85,7 +88,13 @@ vector<int> select_images(const vector<string>& image_files) {
     return choices;
 }
 
-// --- Funzione per processare una singola immagine ---
+//// Processes a single image:
+// - Loads it and reads ground-truth bounding boxes
+// - Runs face detection
+// - Runs emotion recognition on detected faces
+// - Computes detection metrics (precision, recall, IoU)
+// - Compares predicted emotions with ground truth
+// - Displays results on screen
 void process_image(const string& image_file, const string& labels_folder,
                    int& total_detected_faces, int& total_correct_emotions) {
 
@@ -95,7 +104,7 @@ void process_image(const string& image_file, const string& labels_folder,
         return;
     }
 
-    // Leggi ground truth
+    // Read ground truth
     string img_name = fs::path(image_file).stem().string();
     string label_file = labels_folder + "/" + img_name + ".txt";
     vector<Rect> gt_boxes = read_ground_truth(label_file, image.cols, image.rows);
@@ -118,7 +127,7 @@ void process_image(const string& image_file, const string& labels_folder,
         image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction, detected_faces);
     }
 
-    // Valutazione detection
+    // Detection evaluation
     vector<Rect> predicted_faces = get_detected_faces();
     float precision = 0.0f, recall = 0.0f;
     int tp = 0, fp = 0, fn = 0;
@@ -140,7 +149,7 @@ void process_image(const string& image_file, const string& labels_folder,
     cout << "TP: " << tp << ", FP: " << fp << ", FN: " << fn << endl;
     cout << "Precision: " << precision << ", Recall: " << recall << ", Mean IoU: " << mean_iou << endl;
 
-    // Valutazione emozioni
+    // Emotion evaluation
     if (!emotion_prediction.empty()) {
         string gt_label = extract_gt_label(image_file);
         string gt_norm = normalize_label(gt_label);
@@ -182,7 +191,11 @@ void process_image(const string& image_file, const string& labels_folder,
     waitKey(0);
 }
 
-// --- MAIN rifattorizzato ---
+// Entry point of the program:
+// - Loads image paths
+// - Lets user select which images to process
+// - Processes selected images one by one
+// - Computes and prints global accuracy of emotion recognition
 int main() {
     const string images_folder = "../test/images/";
     const string labels_folder = "../test/labels/";
