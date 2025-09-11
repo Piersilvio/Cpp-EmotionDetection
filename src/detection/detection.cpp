@@ -48,11 +48,11 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
 
     CascadeClassifier frontal, profile;
     if (!frontal.load("../models/haarcascade_frontalface_alt2.xml")) {
-        std::cerr << "Errore: frontal cascade non caricato\n";
+        std::cerr << "Error: frontal cascade not loaded \n";
         return;
     }
     if (!profile.load("../models/haarcascade_profileface.xml")) {
-        std::cerr << "Errore: profile cascade non caricato\n";
+        std::cerr << "Error: profile cascade not loaded \n";
         return;
     }
 
