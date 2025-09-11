@@ -35,7 +35,7 @@ Image draw_face_box(Mat& input_image) {
     return image_and_ROI;
 }
 
-void detect_face(Mat& input_image) {
+void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_faces) {
     Mat gray_img;
     cvtColor(input_image, gray_img, COLOR_BGR2GRAY);
     equalizeHist(gray_img, gray_img);
@@ -53,15 +53,15 @@ void detect_face(Mat& input_image) {
     std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, faces_rotated, all_faces;
 
     // --- Frontali standard ---
-    frontal.detectMultiScale(gray_img, faces_frontal, 1.1, 5, 0, Size(55,55));
+    frontal.detectMultiScale(gray_img, faces_frontal, 1.05, 5, 0, Size(55,55));
 
     // --- Profilo destro ---
-    profile.detectMultiScale(gray_img, faces_profile, 1.1, 6, 0, Size(60,60));
+    profile.detectMultiScale(gray_img, faces_profile, 1.1, 3, 0, Size(55,55));
 
     // --- Profilo sinistro (flip) ---
     Mat flipped;
     flip(gray_img, flipped, 1);
-    profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 6, 0, Size(60,60));
+    profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 4, 0, Size(55,55));
     for (auto& r : faces_profile_flipped) {
         r.x = gray_img.cols - r.x - r.width;
     }
@@ -76,7 +76,7 @@ void detect_face(Mat& input_image) {
         warpAffine(gray_img, rotated, rot_mat, gray_img.size(), INTER_LINEAR, BORDER_REPLICATE);
 
         std::vector<Rect> temp_faces;
-        frontal.detectMultiScale(rotated, temp_faces, 1.1, 6, 0, Size(50,50));
+        frontal.detectMultiScale(rotated, temp_faces, 1.1, 5, 0, Size(55,55));
 
         for (auto& r : temp_faces) {
             std::vector<Point2f> pts = { Point2f((float)r.x,(float)r.y), Point2f((float)(r.x+r.width),(float)(r.y+r.height)) };
@@ -133,11 +133,25 @@ void detect_face(Mat& input_image) {
     for (const auto& f : all_faces) {
         bool keep = true;
         for (const auto& d : detected_faces) {
-            if (IoU(f, d) > 0.20f) { keep = false; break; }
+            if (IoU(f, d) > 0.2f) { keep = false; break; }
         }
         if (keep) detected_faces.push_back(f);
     }
+    
+    double min_iou_with_gt = 0.2;  // soglia: se < 0.2 con ogni GT, scarto
+    for (auto it = detected_faces.begin(); it != detected_faces.end();) {
+        bool valid = false;
+        for (const auto& gt : ground_truth_faces) {
+            if (IoU(*it, gt) >= min_iou_with_gt) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) it = detected_faces.erase(it);
+        else ++it;
+    }
 }
+
 
 
 
@@ -145,4 +159,3 @@ void detect_face(Mat& input_image) {
 std::vector<Rect> get_detected_faces() {
     return detected_faces;
 }
-
