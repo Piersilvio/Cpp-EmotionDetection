@@ -8,7 +8,8 @@ namespace fs = std::filesystem;
 
 using namespace cv;
 
-// Funzione per leggere bounding box YOLO-style
+// Reads YOLO-style bounding boxes from a label file and converts
+// them to OpenCV Rect objects in pixel coordinates based on image size.
 std::vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_width, int img_height) {
     std::vector<cv::Rect> boxes;
     std::ifstream infile(label_file);  // ora compilatore sa cos’è ifstream
@@ -32,7 +33,8 @@ std::vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_w
 }
 
 
-// IoU
+// Computes the Intersection over Union between two bounding boxes.
+// Returns a value in [0,1] representing overlap ratio.
 float IoU(const Rect& a, const Rect& b) {
     int x1 = std::max(a.x, b.x);
     int y1 = std::max(a.y, b.y);
@@ -44,7 +46,9 @@ float IoU(const Rect& a, const Rect& b) {
     return unionArea > 0 ? (float)interArea / unionArea : 0.0f;
 }
 
-// Precision e recall
+// Computes precision, recall, true positives (TP), false positives (FP),
+// and false negatives (FN) given predicted and ground-truth boxes.
+// Matching is based on IoU threshold.
 void compute_metrics(const std::vector<cv::Rect>& predicted,
                      const std::vector<cv::Rect>& gt,
                      float iou_thresh,
@@ -77,12 +81,15 @@ void compute_metrics(const std::vector<cv::Rect>& predicted,
     recall = tp + fn > 0 ? (float)tp / (tp + fn) : 0.0f;
 }
 
+// Removes everything after ':' in a predicted label string
+// Useful for stripping confidence scores or extra info
 string clean_pred_label(const string& raw_label) {
     size_t pos = raw_label.find(":");
     if (pos != string::npos) return raw_label.substr(0, pos);
     return raw_label;
 }
 
+// Extracts a clean ground-truth label from a filename
 string extract_gt_label(const string& filename) {
     string stem = fs::path(filename).stem().string();
     size_t pos = stem.find("(");
@@ -90,6 +97,8 @@ string extract_gt_label(const string& filename) {
     return stem;
 }
 
+// Converts a label string to lowercase and removes all spaces.
+// Allows consistent string comparison.
 string normalize_label(const string& s) {
     string out = s;
     out.erase(remove_if(out.begin(), out.end(), ::isspace), out.end());
