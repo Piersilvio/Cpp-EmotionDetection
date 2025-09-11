@@ -1,4 +1,4 @@
-#include <opencv2/opencv.hpp>
+a#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <filesystem> 
 #include <vector>
@@ -45,18 +45,18 @@ vector<string> load_images(const string& folder) {
 // Lets the user select which images to process by typing their indices.
 // Returns a vector of chosen indices.
 vector<int> select_images(const vector<string>& image_files) {
-    cout << "Scegli una o più immagini da analizzare (es. 0 2 5):" << endl;
+    cout << "Select one or more images to analyze (e.g., 0 2 5):" << endl;
     for (size_t i = 0; i < image_files.size(); i++)
         cout << i << ": " << image_files[i] << endl;
 
     vector<int> choices;
     while (true) {
-        cout << "Inserisci gli indici separati da spazio: ";
+        cout << "Enter indices separated by space: ";
         string line;
         getline(cin, line);
 
         if (line.empty()) {
-            cout << "Nessun input inserito. Riprova." << endl;
+            cout << "No input entered. Try again." << endl;
             continue;
         }
 
@@ -69,20 +69,20 @@ vector<int> select_images(const vector<string>& image_files) {
             if (num >= 0 && num < (int)image_files.size()) {
                 choices.push_back(num);
             } else {
-                cout << "Indice " << num << " non valido, ignorato." << endl;
+                cout << "Index " << num << " is invalid, ignored."  << endl;
                 has_invalid = true;
             }
         }
 
         if (!choices.empty()) {
-            if (has_invalid) cout << "Procedo con gli indici validi inseriti." << endl;
+            if (has_invalid) cout << "Proceeding with valid indices entered." << endl;
             break;
         } else {
-            cout << "Nessun indice valido inserito. Riprova." << endl;
+            cout << No valid indices entered. Try again." << endl;
         }
     }
 
-    cout << "Indici selezionati: ";
+    cout << "Selected indices: ";
     for (int i : choices) cout << i << " ";
     cout << endl;
     return choices;
@@ -100,7 +100,7 @@ void process_image(const string& image_file, const string& labels_folder,
 
     Mat image = imread(image_file);
     if (image.empty()) {
-        cout << "Errore nel caricamento dell'immagine " << image_file << endl;
+        cout << "Error loading image " << image_file << endl;
         return;
     }
 
@@ -145,7 +145,7 @@ void process_image(const string& image_file, const string& labels_folder,
     }
     if (count > 0) mean_iou /= count;
 
-    cout << "Immagine: " << image_file << endl;
+    cout << "Image: " << image_file << endl;
     cout << "TP: " << tp << ", FP: " << fp << ", FN: " << fn << endl;
     cout << "Precision: " << precision << ", Recall: " << recall << ", Mean IoU: " << mean_iou << endl;
 
@@ -157,7 +157,7 @@ void process_image(const string& image_file, const string& labels_folder,
         int correct = 0;
         int total = 0;
 
-        cout << "Volti predetti e confronto con GT (FP esclusi):" << endl;
+        cout << "Predicted faces compared with GT (excluding FP):" << endl;
 
         for (size_t i = 0; i < predicted_faces.size(); i++) {
             float best_iou = 0.0f;
@@ -168,7 +168,7 @@ void process_image(const string& image_file, const string& labels_folder,
 
             if (best_iou > iou_threshold) {
                 string pred_norm = normalize_label(clean_pred_label(emotion_prediction[i]));
-                cout << "  Predizione: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << endl;
+                cout << "  Prediction: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << endl;
                 total++;
                 total_detected_faces++;
                 if (pred_norm == gt_norm) {
@@ -179,7 +179,7 @@ void process_image(const string& image_file, const string& labels_folder,
         }
 
         float emotion_accuracy = total > 0 ? (float)correct / total : 0.0f;
-        cout << "Emotion recognition - corrette: " << correct << "/" << total
+        cout << "Emotion recognition - correct: " << correct << "/" << total
              << " (Accuracy: " << emotion_accuracy << ")" << endl;
     }
 
@@ -187,7 +187,7 @@ void process_image(const string& image_file, const string& labels_folder,
     if (!output_image.empty()) imshow(window_name, output_image);
     else imshow(window_name, image);
 
-    cout << "Premi un tasto per passare all'immagine successiva..." << endl;
+    cout << "Press any key to proceed to the next image..." << endl;
     waitKey(0);
 }
 
@@ -203,7 +203,7 @@ int main() {
     vector<string> image_files = load_images(images_folder);
 
     if (image_files.empty()) {
-        cout << "Nessuna immagine trovata nella cartella " << images_folder << endl;
+        cout << "No images found in folder " << images_folder << endl;
         return -1;
     }
 
@@ -220,12 +220,12 @@ int main() {
 
     if (total_detected_faces > 0) {
         float global_accuracy = (float)total_correct_emotions / total_detected_faces;
-        cout << "\n=== Statistiche globali sulle immagini selezionate ===" << endl;
-        cout << "Volti correttamente rilevati con emozione corretta: "
+        cout << "\n=== Global statistics for selected images ===" << endl;
+        cout << "Faces correctly detected with correct emotion: "
              << total_correct_emotions << "/" << total_detected_faces
-             << " (Accuracy globale: " << global_accuracy << ")" << endl;
+             << " (Global accuracy: " << global_accuracy << ")" << endl;
     } else {
-        cout << "Nessun volto correttamente rilevato nelle immagini selezionate." << endl;
+        cout << "No faces correctly detected in the selected images" << endl;
     }
 
     return 0;
