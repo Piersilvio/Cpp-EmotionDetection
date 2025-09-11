@@ -8,7 +8,7 @@ using namespace cv;
 // Face classifier output
 std::vector<Rect> detected_faces;
 
-// Colors
+// Predefined colors used for drawing bounding boxes
 std::vector<cv::Scalar> colors = {
     cv::Scalar(255, 0, 0),
     cv::Scalar(0, 255, 0),
@@ -19,8 +19,9 @@ std::vector<cv::Scalar> colors = {
     cv::Scalar(128, 0, 128)
 };
 
-
-
+// Draws rectangles around detected faces on the input image,
+// extracts the last face ROI, and returns an Image object
+// containing both the full image and the last ROI.
 Image draw_face_box(Mat& input_image) {
     Image image_and_ROI;
     for (size_t i = 0; i < detected_faces.size(); i++) {
@@ -35,6 +36,11 @@ Image draw_face_box(Mat& input_image) {
     return image_and_ROI;
 }
 
+// Detects faces using multiple Haar cascades (frontal, profile,
+// flipped profile, and rotated versions of the image).
+// Filters results by area, aspect ratio, overlap (IoU), and
+// keeps only boxes that match ground-truth with IoU >= 0.2.
+// Stores the final filtered faces in detected_faces.
 void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_faces) {
     Mat gray_img;
     cvtColor(input_image, gray_img, COLOR_BGR2GRAY);
@@ -51,14 +57,14 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
     }
 
     std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, faces_rotated, all_faces;
-
-    // --- Frontali standard ---
+    
+    //Detect frontal faces 
     frontal.detectMultiScale(gray_img, faces_frontal, 1.05, 5, 0, Size(55,55));
 
-    // --- Profilo destro ---
+    //Detect right-profile faces
     profile.detectMultiScale(gray_img, faces_profile, 1.1, 3, 0, Size(55,55));
-
-    // --- Profilo sinistro (flip) ---
+    
+    //Detect left-profile faces by flipping the image
     Mat flipped;
     flip(gray_img, flipped, 1);
     profile.detectMultiScale(flipped, faces_profile_flipped, 1.1, 4, 0, Size(55,55));
@@ -66,7 +72,7 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         r.x = gray_img.cols - r.x - r.width;
     }
 
-    // --- Rotazioni per volti inclinati ---
+     //Detect rotated faces (+-10°)
     std::vector<int> angles = {-10, 10};
     for (int angle : angles) {
         Point2f center(gray_img.cols/2.0F, gray_img.rows/2.0F);
@@ -94,13 +100,13 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         }
     }
 
-    // --- Unisci tutti ---
+    // Merge all detected faces
     all_faces.insert(all_faces.end(), faces_frontal.begin(), faces_frontal.end());
     all_faces.insert(all_faces.end(), faces_profile.begin(), faces_profile.end());
     all_faces.insert(all_faces.end(), faces_profile_flipped.begin(), faces_profile_flipped.end());
     all_faces.insert(all_faces.end(), faces_rotated.begin(), faces_rotated.end());
 
-    
+    // Filter by area (too small or too big boxes are discarded)
     double min_area = 0.0018 * gray_img.total();  // 0.2% dell'immagine
     double max_area = 0.60  * gray_img.total();  // 25% dell'immagine
     for (auto it = all_faces.begin(); it != all_faces.end();) {
@@ -109,13 +115,14 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         else ++it;
     }
 
-    // --- Filtri geometrici: scarta box con rapporti non plausibili ---
+    // Filter by aspect ratio (only roughly square boxes kept)
     for (auto it = all_faces.begin(); it != all_faces.end();) {
         double ratio = (double)it->width / it->height;
         if (ratio < 0.6 || ratio > 1.6) it = all_faces.erase(it);
         else ++it;
     }
-    // --- Filtro box interni ---
+    
+    // Remove boxes completely inside bigger overlapping ones
     for (size_t i = 0; i < all_faces.size(); ++i) {
         bool erased = false;
         for (size_t j = 0; j < all_faces.size(); ++j) {
@@ -128,7 +135,7 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         if (!erased) ++i;
     }
 
-    // --- Rimuovi duplicati con NMS più restrittiva (IoU < 0.4) ---
+    // Removes duplicates / overlapping boxes.
     detected_faces.clear();
     for (const auto& f : all_faces) {
         bool keep = true;
@@ -137,7 +144,8 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         }
         if (keep) detected_faces.push_back(f);
     }
-    
+
+    // Keep only faces matching ground-truth by IoU >= 0.2
     double min_iou_with_gt = 0.2;  // soglia: se < 0.2 con ogni GT, scarto
     for (auto it = detected_faces.begin(); it != detected_faces.end();) {
         bool valid = false;
