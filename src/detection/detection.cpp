@@ -107,8 +107,8 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
     all_faces.insert(all_faces.end(), faces_rotated.begin(), faces_rotated.end());
 
     // Filter by area (too small or too big boxes are discarded)
-    double min_area = 0.0018 * gray_img.total();  // 0.2% dell'immagine
-    double max_area = 0.60  * gray_img.total();  // 25% dell'immagine
+    double min_area = 0.0018 * gray_img.total();  // 0.18% of the image
+    double max_area = 0.60  * gray_img.total();  // 25% of the image
     for (auto it = all_faces.begin(); it != all_faces.end();) {
         double area = it->area();
         if (area < min_area || area > max_area) it = all_faces.erase(it);
@@ -146,7 +146,7 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
     }
 
     // Keep only faces matching ground-truth by IoU >= 0.2
-    double min_iou_with_gt = 0.2;  // soglia: se < 0.2 con ogni GT, scarto
+    double min_iou_with_gt = 0.2;  
     for (auto it = detected_faces.begin(); it != detected_faces.end();) {
         bool valid = false;
         for (const auto& gt : ground_truth_faces) {
