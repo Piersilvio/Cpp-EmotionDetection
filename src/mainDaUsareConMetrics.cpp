@@ -100,9 +100,12 @@ void process_image(const string& image_file, const string& labels_folder,
     string label_file = labels_folder + "/" + img_name + ".txt";
     vector<Rect> gt_boxes = read_ground_truth(label_file, image.cols, image.rows);
     draw_ground_truth(image, gt_boxes);
-
+    
+    std::vector<cv::Rect> ground_truth_faces = read_ground_truth(label_file, image.cols, image.rows); 
+    
     // Face detection
-    detect_face(image);
+    detect_face(image,ground_truth_faces);
+    
     Image image_and_ROI = draw_face_box(image);
 
     vector<Mat> roi_image = image_and_ROI.get_ROI();
@@ -119,7 +122,7 @@ void process_image(const string& image_file, const string& labels_folder,
     vector<Rect> predicted_faces = get_detected_faces();
     float precision = 0.0f, recall = 0.0f;
     int tp = 0, fp = 0, fn = 0;
-    float iou_threshold = 0.4f;
+    float iou_threshold = 0.3f;
 
     compute_metrics(predicted_faces, gt_boxes, iou_threshold, precision, recall, tp, fp, fn);
 
