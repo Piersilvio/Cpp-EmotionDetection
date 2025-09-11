@@ -78,7 +78,7 @@ vector<int> select_images(const vector<string>& image_files) {
             if (has_invalid) cout << "Proceeding with valid indices entered." << endl;
             break;
         } else {
-            cout << No valid indices entered. Try again." << endl;
+            cout <<" No valid indices entered. Try again." << endl;
         }
     }
 
