@@ -51,7 +51,7 @@ void process_image(const string& image_file, const string& labels_folder,
 
     // Detection evaluation
     vector<Rect> predicted_faces = get_detected_faces();
-    float iou_threshold = 0.3f;
+    float iou_threshold = 0.45f;
 
     DetectionEval det = evaluate_detection(predicted_faces, gt_boxes, iou_threshold);
 
@@ -62,15 +62,36 @@ void process_image(const string& image_file, const string& labels_folder,
 
     // Emotion evaluation
     if (!emotion_prediction.empty()) {
-        EmotionEval emo = evaluate_emotions(emotion_prediction, predicted_faces, gt_boxes,
-                                            iou_threshold, image_file);
+        string gt_label = extract_gt_label(image_file);
+        string gt_norm = normalize_label(gt_label);
+
+        int correct = 0;
+        int total = 0;
 
         cout << "Predicted faces compared with GT (excluding FP):" << endl;
-        cout << "Emotion recognition - correct: " << emo.correct << "/" << emo.total
-             << " (Accuracy: " << emo.accuracy << ")" << endl;
 
-        total_detected_faces   += emo.total;
-        total_correct_emotions += emo.correct;
+        for (size_t i = 0; i < predicted_faces.size(); i++) {
+            float best_iou = 0.0f;
+            for (const auto& g : gt_boxes) {
+                float iou = IoU(predicted_faces[i], g);
+                if (iou > best_iou) best_iou = iou;
+            }
+
+            if (best_iou > iou_threshold) {
+                string pred_norm = normalize_label(clean_pred_label(emotion_prediction[i]));
+                cout << "  Prediction: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << endl;
+                total++;
+                total_detected_faces++;
+                if (pred_norm == gt_norm) {
+                    correct++;
+                    total_correct_emotions++;
+                }
+            }
+        }
+
+        float emotion_accuracy = total > 0 ? (float)correct / total : 0.0f;
+        cout << "Emotion recognition - correct: " << correct << "/" << total
+             << " (Accuracy: " << emotion_accuracy << ")" << endl;
     }
 
     Mat output_image = image_and_ROI.get_pic();
