@@ -13,7 +13,7 @@ endif()
 # Se serve, indica esplicitamente dove sta OpenCVConfig.cmake:
 # set(OpenCV_DIR "C:/tools/opencv/build")
 
-find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs highgui dnn)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs highgui dnn objdetect)
 message(STATUS "Found OpenCV ${OpenCV_VERSION}")
 
 add_executable(EmotionDetectionProject
