@@ -28,7 +28,7 @@ cv::Scalar(128, 0, 128)    // Purple
 
 
 
-std::vector<std::string> predict(Image& image, std::string model_filename) {
+std::vector<std::string> predict(Image& image, const std::string& model_filename) {
 
     // this takes the region of interest image and then runs model inference
     std::vector<cv::Mat> roi_image = image.get_preprocessed_ROI();
@@ -36,10 +36,11 @@ std::vector<std::string> predict(Image& image, std::string model_filename) {
     cv::dnn::Net network = dnn::readNet(model_filename); // Load the tensorflow model 
     std::vector<std::string> emotion_prediction;
 
-    if (roi_image.size() > 0) { 
-        for (int i=0; i < roi_image.size(); i++) {
+    if (!roi_image.empty()) {
+        for (const auto & i : roi_image) {
+
             // Convert to blob
-            Mat blob = dnn::blobFromImage(roi_image[i]);
+            Mat blob = dnn::blobFromImage(i);
 
             // Pass blob to network
             network.setInput(blob);
@@ -58,7 +59,7 @@ std::vector<std::string> predict(Image& image, std::string model_filename) {
             int top_class_id = sorted_ids.at<int>(0);
 
             // Map classId to the class name string (ie. happy, sad, angry, disgust etc.)
-            std::string class_name = classid_to_string.at(top_class_id);
+            const std::string& class_name = classid_to_string.at(top_class_id);
 
             // Prediction result string to print
             std::string result_string = class_name + ": " + std::to_string(top_probability * 100) + "%";
@@ -78,7 +79,7 @@ Image print_predicted_label(Image& image_and_ROI, std::vector<std::string>& emot
 
     Mat img = image_and_ROI.get_pic();
     
-    if (detected_faces.size() > 0) { 
+    if (!detected_faces.empty()) {
         for (int i=0; i < detected_faces.size(); i++) {
             Rect r = detected_faces[i];
 

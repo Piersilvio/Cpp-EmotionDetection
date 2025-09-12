@@ -14,6 +14,6 @@ extern void detect_face(cv::Mat& input_image,const std::vector<cv::Rect>& ground
 // Draw a box sorrounding the detected face
 Image draw_face_box(cv::Mat& input_image);
 
-std::vector<cv::Rect> get_detected_faces(void);
+std::vector<cv::Rect> get_detected_faces();
 
 #endif

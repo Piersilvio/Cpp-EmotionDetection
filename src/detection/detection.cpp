@@ -26,7 +26,7 @@ Image draw_face_box(Mat& input_image) {
     Image image_and_ROI;
     for (size_t i = 0; i < detected_faces.size(); i++) {
         Rect r = detected_faces[i];
-        Scalar color = colors[i % colors.size()];
+        const Scalar& color = colors[i % colors.size()];
         rectangle(input_image, r, color, 5, LINE_AA);
 
         Mat roi_image = input_image(r);
@@ -96,7 +96,7 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
             int h = std::min(gray_img.rows - y, (int)std::abs(pts[1].y - pts[0].y));
 
             if (w > 0 && h > 0)
-                faces_rotated.push_back(Rect(x,y,w,h));
+                faces_rotated.emplace_back(x,y,w,h);
         }
     }
 
@@ -159,9 +159,6 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         else ++it;
     }
 }
-
-
-
 
 
 std::vector<Rect> get_detected_faces() {

@@ -14,7 +14,7 @@ class Image {
 
 public: 
     //Constructor
-    Image() {};
+    Image() = default;
     
     //Destructor
     ~Image() {};

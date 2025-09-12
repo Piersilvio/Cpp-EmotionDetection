@@ -19,7 +19,7 @@
 
 
 // Model inference function takes image input and outputs the prediction label and the probability
-std::vector<std::string> predict(Image& image, std::string model_filename);
+std::vector<std::string> predict(Image& image, const std::string& model_filename);
 
 
 // Function to preprocess image for model input

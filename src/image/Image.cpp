@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <utility>
 
 #include "image.h"
 
@@ -31,5 +32,5 @@ std::vector<Mat> Image::get_preprocessed_ROI() {
 
 // Replaces the vector of preprocessed ROI images with a new one.
 void Image::set_preprocessed_ROI(std::vector<Mat> prepr_roi) {
-    this->preprocessed_ROI = prepr_roi;
+    this->preprocessed_ROI = std::move(prepr_roi);
 }

@@ -75,12 +75,12 @@ void process_image(const string& image_file, const string& labels_folder,
 
     Mat output_image = image_and_ROI.get_pic();
 
-    // --- Salvataggio immagine annotata (non influisce su detection/recognition) ---
+    // saving annoted image
     try {
         namespace fs = std::filesystem;
-        fs::create_directories(OUTPUT_DIR); // crea se non esiste
+        fs::create_directories(OUTPUT_DIR); // create the "output" dir to store
 
-        const Mat& annotated = output_image.empty() ? image : output_image; // se non c'è overlay, salva l'immagine base
+        const Mat& annotated = output_image.empty() ? image : output_image;
         string base = fs::path(image_file).stem().string();
         fs::path outPath = fs::path(OUTPUT_DIR) / (base + "_annotated.jpg");
 
@@ -94,6 +94,7 @@ void process_image(const string& image_file, const string& labels_folder,
     } catch (const std::exception& e) {
         cerr << "Save error: " << e.what() << endl;
     }
+
     // ------------------------------------------------------------------------------
 
     if (!output_image.empty()) imshow(window_name, output_image);

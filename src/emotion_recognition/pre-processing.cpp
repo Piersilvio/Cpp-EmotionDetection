@@ -16,7 +16,7 @@ void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
         return;
     }
 
-    if (roi_image.size() > 0) { 
+    if (!roi_image.empty()) {
         for (int i=0; i < roi_image.size(); i++) {
         
                 if (roi_image[i].empty()) {
@@ -40,8 +40,6 @@ void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
     }
     
     image_and_ROI.set_preprocessed_ROI(preprocessed_ROI); 
-    
-    return;
 
 }
 

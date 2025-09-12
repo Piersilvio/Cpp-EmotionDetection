@@ -2,16 +2,16 @@
 #include "metrics.h"
 #include <fstream>   
 #include <sstream>
-#include <iostream>  
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 using namespace cv;
 
 // Reads YOLO-style bounding boxes from a label file and converts
 // them to OpenCV Rect objects in pixel coordinates based on image size.
-std::vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_width, int img_height) {
-    std::vector<cv::Rect> boxes;
+vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_width, int img_height) {
+    vector<cv::Rect> boxes;
     std::ifstream infile(label_file);  // ora compilatore sa cos’è ifstream
     if (!infile.is_open()) return boxes;
 
@@ -27,7 +27,7 @@ std::vector<cv::Rect> read_ground_truth(const std::string& label_file, int img_w
         int width = static_cast<int>(w * img_width);
         int height = static_cast<int>(h * img_height);
 
-        boxes.push_back(cv::Rect(x1, y1, width, height));
+        boxes.emplace_back(x1, y1, width, height);
     }
     return boxes;
 }
