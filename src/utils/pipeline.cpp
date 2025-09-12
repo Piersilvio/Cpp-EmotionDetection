@@ -80,7 +80,7 @@ void process_image(const string& image_file, const string& labels_folder,
         namespace fs = std::filesystem;
         fs::create_directories(OUTPUT_DIR); // if it does not exist, create 
 
-        const Mat& annotated = output_image.empty() ? image : output_image; // if there is not overlay, save the original image
+        const Mat& annotated = output_image.empty() ? image : output_image; // if there is no overlay, save the original image
         string base = fs::path(image_file).stem().string();
         fs::path outPath = fs::path(OUTPUT_DIR) / (base + "_annotated.jpg");
 
