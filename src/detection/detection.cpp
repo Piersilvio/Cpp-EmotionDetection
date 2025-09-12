@@ -135,7 +135,7 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         if (!erased) ++i;
     }
 
-    // Removes duplicates / overlapping boxes.
+    // Non-maximum suppression to remove duplicates / overlapping boxes.
     detected_faces.clear();
     for (const auto& f : all_faces) {
         bool keep = true;
