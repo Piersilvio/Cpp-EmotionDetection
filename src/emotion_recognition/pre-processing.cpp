@@ -1,5 +1,4 @@
 #include <opencv2/opencv.hpp>
-
 #include "../image/Image.h"
 #include "emotion_recognition.h"
 
@@ -7,8 +6,7 @@ using namespace cv;
 
 void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
 
-    Mat processed_image;
-    std::vector<Mat>  preprocessed_ROI;
+    std::vector<Mat> preprocessed_ROI;
 
     if (roi_image.empty()) {
         std::cerr << "No ROI found, skip preprocessing." << std::endl;
@@ -16,31 +14,30 @@ void preprocessROI(std::vector<Mat>& roi_image, Image& image_and_ROI) {
         return;
     }
 
-    if (!roi_image.empty()) {
-        for (int i=0; i < roi_image.size(); i++) {
-        
-                if (roi_image[i].empty()) {
+    for (size_t i = 0; i < roi_image.size(); ++i) {
+        if (roi_image[i].empty()) {
             std::cerr << "ROI " << i << " empty, skipped." << std::endl;
             continue;
         }
 
-                // convert to grayscale 
-                Mat gray_image;
-                cvtColor( roi_image[i], gray_image, COLOR_BGR2GRAY );
+        // 1) BGR->GRAY (se serve)
+        Mat gray;
+        if (roi_image[i].channels() == 3)
+            cvtColor(roi_image[i], gray, COLOR_BGR2GRAY);
+        else
+            gray = roi_image[i];
 
-                // Resize the ROI to model input size
-                resize(gray_image, processed_image, Size(48,48));
+        // 2) Resize a 48x48 (come nel training)
+        Mat resized;
+        resize(gray, resized, Size(48, 48), 0, 0, INTER_LINEAR);
 
-                // Convert image pixels from between 0-255 to 0-1
-                processed_image.convertTo(processed_image, CV_32FC3, 1.f/255);
+        // 3) float32 e normalizzazione [0,1]
+        Mat f32;
+        resized.convertTo(f32, CV_32F, 1.f / 255.f);
 
-                // Append onto the model input vector
-                preprocessed_ROI.push_back(processed_image);
-        }
+        // NB: 1 canale, 48x48, CV_32F
+        preprocessed_ROI.push_back(f32);
     }
-    
-    image_and_ROI.set_preprocessed_ROI(preprocessed_ROI); 
 
+    image_and_ROI.set_preprocessed_ROI(preprocessed_ROI);
 }
-
-
