@@ -94,7 +94,7 @@ void process_image(const string& image_file, const string& labels_folder,
     } catch (const std::exception& e) {
         cerr << "Save error: " << e.what() << endl;
     }
-    // ------------------------------------------------------------------------------
+   
 
     if (!output_image.empty()) imshow(window_name, output_image);
     else imshow(window_name, image);
