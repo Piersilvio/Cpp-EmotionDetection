@@ -75,7 +75,7 @@ void process_image(const string& image_file, const string& labels_folder,
 
     Mat output_image = image_and_ROI.get_pic();
 
-    // --- Salvataggio immagine annotata (non influisce su detection/recognition) ---
+    // Saving of the image
     try {
         namespace fs = std::filesystem;
         fs::create_directories(OUTPUT_DIR); // crea se non esiste
