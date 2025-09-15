@@ -9,15 +9,16 @@ using namespace cv;
 std::vector<Rect> detected_faces;
 
 // Predefined colors used for drawing bounding boxes
-std::vector<cv::Scalar> colors = {
-    cv::Scalar(255, 0, 0),
-    cv::Scalar(0, 255, 0),
-    cv::Scalar(0, 0, 255),
-    cv::Scalar(255, 255, 0),
-    cv::Scalar(255, 0, 255),
-    cv::Scalar(0, 255, 255),
-    cv::Scalar(128, 0, 128)
+vector<Scalar> colors = {
+Scalar(255, 0, 0),     // Blue
+Scalar(0, 255, 0),     // Green
+Scalar(0, 0, 255),     // Red
+Scalar(255, 255, 0),   // Cyan
+Scalar(255, 0, 255),   // Magenta
+Scalar(0, 255, 255),   // Yellow
+Scalar(128, 0, 128)    // Purple
 };
+
 
 // Draws rectangles around detected faces on the input image,
 // extracts the last face ROI, and returns an Image object
@@ -159,8 +160,6 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         else ++it;
     }
 }
-
-
 
 
 
