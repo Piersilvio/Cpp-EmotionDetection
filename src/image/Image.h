@@ -7,9 +7,10 @@
 
 /*
  * An Image object contains the original picture, the detected regions of interest and
- * the image with preprocessedn ROIs. These three elements can be setted and retrieved 
+ * the images with preprocessed ROIs. These three elements can be setted and retrieved 
  * separately. 
  */
+ 
 class Image {
 
 public: 
@@ -31,10 +32,10 @@ private:
     // The image without ROIs
     cv::Mat _pic;   
     
-    // Regions of interest within the bounding box
+    // Vector that contains images with Regions Of Interest (ROIs)  (an element for each detected ROI)
     std::vector<cv::Mat> _roi_image;
     
-    // Preprocessed image ready for model
+    // Vector that contains the images with ROIs preprocessed before to being fed into the model
     std::vector<cv::Mat>  preprocessed_ROI;
     
 
