@@ -75,33 +75,56 @@ vector<string> predict(Image& img, string model) {
 }
 
 
-Image print_predicted_label(Image& image_and_ROI, std::vector<std::string>& emotion_prediction, std::vector<Rect> detected_faces) {
+Image print_predicted_label(Image& image_and_ROI,
+                            std::vector<std::string>& emotion_prediction,
+                            std::vector<cv::Rect> detected_faces)
+{
+    cv::Mat img = image_and_ROI.get_pic();
 
-    Mat img = image_and_ROI.get_pic();
-    
-    if (detected_faces.size() > 0) { 
-        for (int i=0; i < detected_faces.size(); i++) {
-            Rect r = detected_faces[i];
+#ifdef CV_AA
+    const int lineType = CV_AA;      // OpenCV 2.x
+#else
+    const int lineType = cv::LINE_AA;
+#endif
 
-              // Convert to upper case
-              std::string emotion_upper = emotion_prediction[i];
-              std::transform(emotion_upper.begin(), emotion_upper.end(), emotion_upper.begin(), ::toupper);
-          
-              cv::putText(img,
-                          emotion_upper,
-                          cv::Point(r.x, r.y - 10),
-                          cv::FONT_HERSHEY_COMPLEX,
-                          1.0,                          // scale
-                          label_colors[i % label_colors.size()],    // same color of the bounding box
-                          1);   
+    const int boxThickness  = 2;
+    const int textThickness = 1.25;
+    const double fontScale  = 0.55;
+    const int fontFace      = cv::FONT_HERSHEY_SIMPLEX;
+
+    const size_t n = std::min(detected_faces.size(), emotion_prediction.size());
+    for (size_t i = 0; i < n; ++i) {
+        const cv::Rect& r = detected_faces[i];
+        const cv::Scalar color = label_colors[i % label_colors.size()];
+
+        // Disegna il riquadro
+        cv::rectangle(img, r, color, boxThickness, lineType);
+
+        // Testo in MAIUSCOLO
+        std::string txt = emotion_prediction[i];
+        std::transform(txt.begin(), txt.end(), txt.begin(), ::toupper);
+
+        // --- centratura orizzontale del testo rispetto al riquadro ---
+        int baseline = 0;
+        cv::Size ts = cv::getTextSize(txt, fontFace, fontScale, textThickness, &baseline);
+
+        int textX = r.x + (r.width - ts.width) / 2;  // centro orizzontale
+        int textY = r.y - 5;                         // di default sopra al box
+
+        // Se uscirebbe fuori in alto, spostalo dentro il box poco sotto il bordo superiore
+        if (textY - ts.height < 0) {
+            textY = r.y + ts.height + 5;
         }
+
+        // Clamp orizzontale per sicurezza (evita di uscire dall'immagine)
+        textX = std::max(0, std::min(textX, img.cols - ts.width));
+        // Clamp verticale minimo (assicurati che la baseline sia visibile)
+        textY = std::max(ts.height, std::min(textY, img.rows - 1));
+
+        cv::putText(img, txt, cv::Point(textX, textY),
+                    fontFace, fontScale, color, textThickness, lineType);
     }
 
     image_and_ROI.set_pic(img);
-
     return image_and_ROI;
-
 }
-
-
-

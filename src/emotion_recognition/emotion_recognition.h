@@ -8,6 +8,8 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "../image/Image.h"
 
@@ -19,6 +21,7 @@ std::vector<std::string> predict(Image& img, std::string model);
 
 // Print the predicted emotion label
 Image print_predicted_label(Image& image_and_ROI, std::vector<std::string>& emotion_prediction, std::vector<cv::Rect> detected_faces);
+
 
 #endif
 
