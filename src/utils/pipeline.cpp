@@ -35,7 +35,7 @@ void process_image(const string& image_file, const string& labels_folder,
     std::vector<cv::Rect> ground_truth_faces = read_ground_truth(label_file, image.cols, image.rows);
 
     // Face detection
-    detect_face(image, ground_truth_faces);
+    vector<Rect> detected_faces = detect_face(image, ground_truth_faces);
 
     Image image_and_ROI = draw_face_box(image);
 
@@ -44,13 +44,12 @@ void process_image(const string& image_file, const string& labels_folder,
 
     if (!roi_image.empty()) {
         preprocessROI(roi_image, image_and_ROI);
-        vector<Rect> detected_faces = get_detected_faces();
         emotion_prediction = predict(image_and_ROI, TENSORFLOW_MODEL_PATH);
         image_and_ROI = print_predicted_label(image_and_ROI, emotion_prediction, detected_faces);
     }
 
     // Detection evaluation
-    vector<Rect> predicted_faces = get_detected_faces();
+    vector<Rect> predicted_faces = detected_faces;
     float iou_threshold = 0.45f;
 
     DetectionEval det = evaluate_detection(predicted_faces, gt_boxes, iou_threshold);
