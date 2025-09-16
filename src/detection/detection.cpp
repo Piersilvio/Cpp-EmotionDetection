@@ -3,7 +3,7 @@
 #include "detection.h"
 #include "../image/Image.h"
 #include "../metrics/metrics.h"
-
+#include "../utils/config.h"
 using namespace cv;
 
 // Face classifier output
@@ -49,11 +49,11 @@ std::vector<Rect> detect_face(Mat& input_image, const std::vector<cv::Rect>& gro
     equalizeHist(gray_img, gray_img);
 
     CascadeClassifier frontal, profile;
-    if (!frontal.load("../models/haarcascade_frontalface_alt2.xml")) {
+    if (!frontal.load(HAAR_CASCADE_FRONTALFACE_PATH)) {
         std::cerr << "Error: frontal cascade not loaded \n";
         return detected_faces;
     }
-    if (!profile.load("../models/haarcascade_profileface.xml")) {
+    if (!profile.load(HAAR_CASCADE_PROFILEFACE_PATH)) {
         std::cerr << "Error: profile cascade not loaded \n";
         return detected_faces;
     }
