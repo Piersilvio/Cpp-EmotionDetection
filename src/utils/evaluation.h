@@ -1,10 +1,7 @@
-
+//Tommaso Ballarin
 
 #ifndef EVALUATION_H
 #define EVALUATION_H
-
-
-
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
