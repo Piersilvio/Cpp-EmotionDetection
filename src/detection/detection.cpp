@@ -42,7 +42,7 @@ Image draw_face_box(Mat& input_image) {
 // Filters results by area, aspect ratio, overlap (IoU), and
 // keeps only boxes that match ground-truth with IoU >= 0.2.
 // Stores the final filtered faces in detected_faces.
-void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_faces) {
+std::vector<Rect> detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_faces) {
     Mat gray_img;
     cvtColor(input_image, gray_img, COLOR_BGR2GRAY);
     equalizeHist(gray_img, gray_img);
@@ -50,11 +50,11 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
     CascadeClassifier frontal, profile;
     if (!frontal.load("../models/haarcascade_frontalface_alt2.xml")) {
         std::cerr << "Error: frontal cascade not loaded \n";
-        return;
+        return detected_faces;
     }
     if (!profile.load("../models/haarcascade_profileface.xml")) {
         std::cerr << "Error: profile cascade not loaded \n";
-        return;
+        return detected_faces;
     }
 
     std::vector<Rect> faces_frontal, faces_profile, faces_profile_flipped, faces_rotated, all_faces;
@@ -159,10 +159,8 @@ void detect_face(Mat& input_image, const std::vector<cv::Rect>& ground_truth_fac
         if (!valid) it = detected_faces.erase(it);
         else ++it;
     }
-}
-
-
-
-std::vector<Rect> get_detected_faces() {
+    
     return detected_faces;
+    
 }
+
