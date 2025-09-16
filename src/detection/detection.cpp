@@ -1,3 +1,4 @@
+//Tommaso Ballarin
 #include <opencv2/opencv.hpp>
 #include "detection.h"
 #include "../image/Image.h"
