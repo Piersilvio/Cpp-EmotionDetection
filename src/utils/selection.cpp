@@ -6,8 +6,6 @@
 
 using namespace std;
 
-// Lets the user select which images to process by typing their indices.
-// Returns a vector of chosen indices.
 vector<int> select_images(const vector<string>& image_files) {
     cout << "Select one or more images to analyze (e.g., 0 2 5):" << endl;
     for (size_t i = 0; i < image_files.size(); i++)

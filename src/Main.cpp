@@ -12,11 +12,16 @@
 using namespace std;
 using namespace cv;
 
-// Entry point of the program:
-// - Loads image paths
-// - Lets user select which images to process
-// - Processes selected images one by one
-// - Computes and prints global accuracy of emotion recognition
+
+
+/*
+* Entry point of the program:
+*   - Loads image paths
+*   - Lets user select which images to process
+*   - Processes selected images one by one
+*   - Computes and prints global accuracy of emotion recognition
+*/
+
 int main() {
     const string images_folder = "../test/images/";
     const string labels_folder = "../test/labels/";

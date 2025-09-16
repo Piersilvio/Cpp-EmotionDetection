@@ -6,8 +6,6 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-// Loads all image file paths from a given folder and
-// returns a vector of file paths.
 vector<string> load_images(const string& folder) {
     vector<string> image_files;
     for (const auto& entry : fs::directory_iterator(folder)) {

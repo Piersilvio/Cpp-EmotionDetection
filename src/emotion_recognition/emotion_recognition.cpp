@@ -3,46 +3,43 @@
 #include "emotion_recognition.h"
 
 using namespace cv;
-using namespace std;
 
 
 // Mapping of the class id to the string label
-map<int, string> classid_to_string = {
+std::map<int, std::string> classid_to_string = {
                          {0, "Angry"}, 
                          {1, "Disgust"}, 
                          {2, "Fear"}, 
                          {3, "Happy"}, 
                          {4, "Sad"}, 
                          {5, "Surprise"}, 
-                         {6, "Neutral"}} ;
+                         {6, "Neutral"}} ;  // Create a map from class id to the class labels
                          
 //Label colors
-vector<Scalar> label_colors = {
-Scalar(255, 0, 0),     // Blue
-Scalar(0, 255, 0),     // Green
-Scalar(0, 0, 255),     // Red
-Scalar(255, 255, 0),   // Cyan
-Scalar(255, 0, 255),   // Magenta
-Scalar(0, 255, 255),   // Yellow
-Scalar(128, 0, 128)    // Purple
+std::vector<cv::Scalar> label_colors = {
+cv::Scalar(255, 0, 0),     // Blue
+cv::Scalar(0, 255, 0),     // Green
+cv::Scalar(0, 0, 255),     // Red
+cv::Scalar(255, 255, 0),   // Cyan
+cv::Scalar(255, 0, 255),   // Magenta
+cv::Scalar(0, 255, 255),   // Yellow
+cv::Scalar(128, 0, 128)    // Purple
 };
 
 
 
-vector<string> predict(Image& img, string model) {
+std::vector<std::string> predict(Image& image, std::string model_filename) {
 
-    vector<Mat> prep_ROI= img.get_preprocessed_ROI();
+    // this takes the region of interest image and then runs model inference
+    std::vector<cv::Mat> roi_image = image.get_preprocessed_ROI();
     
-    // Load model 
-    dnn::Net network = dnn::readNet(model); 
-    
-    // Vector that will contain the emotion prediction for each input ROI
-    vector<string> predictions;
+    cv::dnn::Net network = dnn::readNet(model_filename); // Load the tensorflow model 
+    std::vector<std::string> emotion_prediction;
 
-    if (prep_ROI.size() > 0) { 
-        for (int i=0; i < prep_ROI.size(); i++) {
+    if (roi_image.size() > 0) { 
+        for (int i=0; i < roi_image.size(); i++) {
             // Convert to blob
-            Mat blob = dnn::blobFromImage(prep_ROI[i]);
+            Mat blob = dnn::blobFromImage(roi_image[i]);
 
             // Pass blob to network
             network.setInput(blob);
@@ -50,27 +47,29 @@ vector<string> predict(Image& img, string model) {
             // Forward pass on network    
             Mat prob = network.forward();
 
-            // Sort the probabilities and rank the indices
+            // Sort the probabilities and rank the indicies
             Mat sorted_probabilities;
             Mat sorted_ids;
-            cv::sort(prob.reshape(1, 1), sorted_probabilities, SORT_DESCENDING);
-            cv::sortIdx(prob.reshape(1, 1), sorted_ids, SORT_DESCENDING);
+            sort(prob.reshape(1, 1), sorted_probabilities, SORT_DESCENDING);
+            sortIdx(prob.reshape(1, 1), sorted_ids, SORT_DESCENDING);
 
             // Get top probability and top class id
             float top_probability = sorted_probabilities.at<float>(0);
             int top_class_id = sorted_ids.at<int>(0);
 
-            string class_name = classid_to_string.at(top_class_id);
+            // Map classId to the class name string (ie. happy, sad, angry, disgust etc.)
+            std::string class_name = classid_to_string.at(top_class_id);
 
             // Prediction result string to print
-            string result_string = class_name + ": " + to_string(top_probability * 100) + "%";
+            std::string result_string = class_name + ": " + std::to_string(top_probability * 100) + "%";
 
-            predictions.push_back(result_string);
+            // Put on end of result vector
+            emotion_prediction.push_back(result_string);
 
         }
     }
 
-    return predictions;
+    return emotion_prediction;
 
 }
 
