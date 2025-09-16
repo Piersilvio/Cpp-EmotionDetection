@@ -4,12 +4,12 @@
 
 using namespace cv;
 
-// Return the original input image
+// Return the final output image
 Mat Image::get_pic() {
     return this->_pic;
 }
 
-// Set the input image in the Image object.
+// Set the final output image
 void Image::set_pic(Mat& pic) {
     this->_pic = pic;
 }

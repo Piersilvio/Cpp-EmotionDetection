@@ -6,9 +6,10 @@
 
 
 /*
- * An Image object contains the original picture, the detected regions of interest and
- * the images with preprocessed ROIs. These three elements can be setted and retrieved 
- * separately. 
+ * An Image object contains the final picture containing the results of  the application
+ * of face detection and emotion recognition plus the ground truth boxes, the detected regions 
+ * of interest and the images with preprocessed ROIs. These three elements can be setted and 
+ * retrieved separately. 
  */
  
 class Image {
