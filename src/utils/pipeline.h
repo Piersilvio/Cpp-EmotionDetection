@@ -1,4 +1,4 @@
-
+//Tommaso Ballarin
 
 #ifndef PIPELINE_H
 #define PIPELINE_H
