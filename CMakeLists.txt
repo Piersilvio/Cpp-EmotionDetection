@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 project(FaceDetectionEmotionRecognition LANGUAGES CXX)
 
-# C++ standard (17 è sufficiente per <filesystem>; puoi lasciare 23 se vuoi)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# (Opzionale ma utile su MSVC per avere __cplusplus corretto)
 if (MSVC)
     add_compile_options(/Zc:__cplusplus)
 endif()
-
-# Se serve, indica esplicitamente dove sta OpenCVConfig.cmake:
-# set(OpenCV_DIR "C:/tools/opencv/build")
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs highgui dnn objdetect)
 message(STATUS "Found OpenCV ${OpenCV_VERSION}")
@@ -30,7 +25,6 @@ add_executable(FaceDetectionEmotionRecognition
         src/utils/evaluation.cpp
 )
 
-# Per #include "utils/..." ecc.
 target_include_directories(FaceDetectionEmotionRecognition PRIVATE
         src
         ${OpenCV_INCLUDE_DIRS}
