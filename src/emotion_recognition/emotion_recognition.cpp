@@ -22,7 +22,7 @@ map<int, string> classid_to_string = {
 vector<Scalar> label_colors = {
 Scalar(255, 0, 0),     // Blue
 Scalar(0, 255, 0),     // Green
-Scalar(0, 0, 255),     // Red
+Scalar(0, 0, 140),     // modified Red
 Scalar(255, 255, 0),   // Cyan
 Scalar(255, 0, 255),   // Magenta
 Scalar(0, 255, 255),   // Yellow
@@ -83,11 +83,7 @@ Image print_predicted_label(Image& image_and_ROI,
 {
     cv::Mat img = image_and_ROI.get_pic();
 
-#ifdef CV_AA
-    const int lineType = CV_AA;      // OpenCV 2.x
-#else
     const int lineType = cv::LINE_AA;
-#endif
 
     const int boxThickness  = 2;
     const int textThickness = 1.25;
