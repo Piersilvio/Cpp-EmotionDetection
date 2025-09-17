@@ -110,64 +110,66 @@ void process_image(const string& image_file, const string& labels_folder,
 
     Mat output_image = image_and_ROI.get_pic();
 
-    /* =====================  GUI compose (NEW)  ===================== */
-    {
-        const int WIN_W = 1280, WIN_H = 720;
+    /*************** PRESERVATION OF BOXES SHAPE *******************/
+    /*                                                             
+     * This section prevents the face bounding boxes and GT boxes to be 
+     * reshaped when the image is too large and it is reshaped by functions
+     * setWindowProperty() using the flag WINDOW_KEEPRATIO and resizeWindow()                                                       
+     */  
 
-        // Compute the transform (same logic as WINDOW_KEEPRATIO)
-        const double sx = WIN_W / static_cast<double>(image.cols);
-        const double sy = WIN_H / static_cast<double>(image.rows);
-        const double scale = min(sx, sy);
-        const int dispW = max(1, cvRound(image.cols * scale));
-        const int dispH = max(1, cvRound(image.rows * scale));
-        const int offX  = (WIN_W - dispW) / 2;
-        const int offY  = (WIN_H - dispH) / 2;
+    // Compute the transform (same logic as WINDOW_KEEPRATIO)
+    const double sx = WIN_W / static_cast<double>(image.cols);
+    const double sy = WIN_H / static_cast<double>(image.rows);
+    const double scale = min(sx, sy);
+    const int dispW = max(1, cvRound(image.cols * scale));
+    const int dispH = max(1, cvRound(image.rows * scale));
+    const int offX  = (WIN_W - dispW) / 2;
+    const int offY  = (WIN_H - dispH) / 2;
 
-        // Clean canvas: reload the original image to avoid pre-existing overlays
-        Mat base = imread(image_file);
-        if (base.empty()) base = image.clone();
-        Mat vis(WIN_H, WIN_W, base.type(), Scalar::all(0));
+    Mat original_img = imread(image_file);
+    if (original_img.empty()) original_img = image.clone();
+        
+    // Initialize a black Mat image of size WIN_H × WIN_W (look at ../utils/config.h), 
+    // with the same format (number of channels and depth) as the input image
+    Mat black_canvas(WIN_H, WIN_W, original_img.type(), Scalar::all(0));
 
-        const int interp = (scale < 1.0) ? INTER_AREA : INTER_LINEAR;
-        Mat resized;
-        resize(base, resized, Size(dispW, dispH), 0, 0, interp);
-        resized.copyTo(vis(Rect(offX, offY, dispW, dispH)));
-
-        // Map faces bounding boxes to window coordinates
-        std::vector<cv::Rect> faces_gui = detected_faces;
-        faces_gui = map_bounding_boxes(faces_gui, offX, offY, scale);
-       
-        // Map GT boxes to window coordinates
-        std::vector<cv::Rect> gt_gui = gt_boxes;
-        gt_gui = map_bounding_boxes(gt_gui, offX, offY, scale);
-
-        // Draw boxes + labels on the window-resolution canvas
-        const int lineType = LINE_AA;
-
-        draw_ground_truth(vis, gt_gui);    
+    const int interp = (scale < 1.0) ? INTER_AREA : INTER_LINEAR;
     
-        Image canvasWrap;
-        canvasWrap.set_pic(vis); // the canvas becomes the internal image of the object
+    Mat resized;
+    resize(original_img, resized, Size(dispW, dispH), 0, 0, interp);
+    resized.copyTo(black_canvas(Rect(offX, offY, dispW, dispH)));
 
-        // Draw rectangles + labels with the "original colors"
-        canvasWrap = print_predicted_label(canvasWrap, emotion_prediction, faces_gui);
+    // Map faces bounding boxes to window coordinates
+    std::vector<cv::Rect> faces_gui = detected_faces;
+    faces_gui = map_bounding_boxes(faces_gui, offX, offY, scale);
+       
+    // Map GT boxes to window coordinates
+    std::vector<cv::Rect> gt_gui = gt_boxes;
+    gt_gui = map_bounding_boxes(gt_gui, offX, offY, scale);
 
-        // Retrieve the drawn Mat
-        vis = canvasWrap.get_pic();
- 
-        // From here on we use 'vis' to save and display
-        output_image = vis;
-    }
-    /* ===================  end GUI compose (NEW)  =================== */
+    // Draw GT on the window-resolution canvas
+    draw_ground_truth(black_canvas, gt_gui);    
+    
+    Image canvasWrap;
+    canvasWrap.set_pic(black_canvas);
 
+     // Draw face box and predicted emotion label on the window-resolution canvas
+     canvasWrap = print_predicted_label(canvasWrap, emotion_prediction, faces_gui);
+
+     // Retrieve the drawn Mat
+     black_canvas = canvasWrap.get_pic();
+     output_image = black_canvas;
+     
+    /*************** END OF BOXES PRESERVATION SECTION ******************/
+    
     // Saving of the image
     try {
         namespace fs = filesystem;
         fs::create_directories(OUTPUT_DIR); // if it does not exist, create
 
         const Mat& annotated = output_image.empty() ? image : output_image; // fallback if something went wrong
-        string base = fs::path(image_file).stem().string();
-        fs::path outPath = fs::path(OUTPUT_DIR) / (base + "_annotated.jpg");
+        string original_img = fs::path(image_file).stem().string();
+        fs::path outPath = fs::path(OUTPUT_DIR) / (original_img + "_annotated.jpg");
 
         vector<int> jpgParams = { IMWRITE_JPEG_QUALITY, 95 };
         if (imwrite(outPath.string(), annotated, jpgParams)) {
