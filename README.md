@@ -1,8 +1,9 @@
 # Face Detection and Emotion Recognition
 
+**Authors:** Ballarin Tommaso, Onorati Jacopo, Spicoli Piersilvio
+
 ## Goal
-The application takes static images in input. The aim is to detect a face for each person that is represented and, in addition, the interpretation of the facial expression emotion choosing between seven emotions: happy, sad, angry, disgust, surprise, fear, neutral. The detection is performed using the well-known Viola-Jones algorithm while the emotion recognition exploits a pre-trained Convolutional Neural
-Network model.
+The application takes static images in input. The aim is to detect a face for each person that is represented and, in addition, the interpretation of the facial expression emotion choosing between seven emotions: happy, sad, angry, disgust, surprise, fear, neutral. The detection is performed using the well-known Viola-Jones algorithm while the emotion recognition exploits a custom CNN model.
 
 
 ## Brief technical description
@@ -19,7 +20,7 @@ App development has required the following main steps:
 
 ## Minimum requirements
 - cmake >= 3.22
-- tensorflow <= 1.15
+- tensorflow <= 2.19
 - compiler: g++ 11.4 (other versions untested)
 - libraries: OpenCV 4.3.0 (other versions untested)
 
