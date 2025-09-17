@@ -78,51 +78,52 @@ vector<string> predict(Image& img, string model) {
 
 
 Image print_predicted_label(Image& image_and_ROI,
-                            std::vector<std::string>& emotion_prediction,
-                            std::vector<cv::Rect> detected_faces)
+                            vector<string>& emotion_prediction,
+                            vector<Rect> detected_faces)
 {
-    cv::Mat img = image_and_ROI.get_pic();
+    Mat img = image_and_ROI.get_pic();
 
-    const int lineType = cv::LINE_AA;
+    const int type_of_line = LINE_AA;
 
-    const int boxThickness  = 2;
-    const int textThickness = 1.25;
-    const double fontScale  = 0.55;
-    const int fontFace      = cv::FONT_HERSHEY_SIMPLEX;
+    const int box_thickness  = 2;
+    const int text_thickness = 1.25;
+    const double font_scale  = 0.55;
+    const int font_face      = cv::FONT_HERSHEY_SIMPLEX;
 
-    const size_t n = std::min(detected_faces.size(), emotion_prediction.size());
+    const size_t n = min(detected_faces.size(), emotion_prediction.size());
     for (size_t i = 0; i < n; ++i) {
-        const cv::Rect& r = detected_faces[i];
-        const cv::Scalar color = label_colors[i % label_colors.size()];
+        const Rect& r = detected_faces[i];
+        const Scalar color = label_colors[i % label_colors.size()];
 
-        // Disegna il riquadro
-        cv::rectangle(img, r, color, boxThickness, lineType);
+        // Draw the bounding box
+        rectangle(img, r, color, box_thickness, type_of_line);
 
-        // Testo in MAIUSCOLO
-        std::string txt = emotion_prediction[i];
-        std::transform(txt.begin(), txt.end(), txt.begin(), ::toupper);
+        // Text in UPPERCASE
+        string txt = emotion_prediction[i];
+        transform(txt.begin(), txt.end(), txt.begin(), ::toupper);
 
-        // --- centratura orizzontale del testo rispetto al riquadro ---
+        // Horizontal centering of the text with respect to the box
         int baseline = 0;
-        cv::Size ts = cv::getTextSize(txt, fontFace, fontScale, textThickness, &baseline);
+        Size ts = getTextSize(txt, font_face, font_scale, text_thickness, &baseline);
 
-        int textX = r.x + (r.width - ts.width) / 2;  // centro orizzontale
-        int textY = r.y - 5;                         // di default sopra al box
+        int textX = r.x + (r.width - ts.width) / 2;  // horizontal center
+        int textY = r.y - 5;                         // by default above the box
 
-        // Se uscirebbe fuori in alto, spostalo dentro il box poco sotto il bordo superiore
+        // If it would go out on top, move it inside the box just below the top edge
         if (textY - ts.height < 0) {
             textY = r.y + ts.height + 5;
         }
 
-        // Clamp orizzontale per sicurezza (evita di uscire dall'immagine)
-        textX = std::max(0, std::min(textX, img.cols - ts.width));
-        // Clamp verticale minimo (assicurati che la baseline sia visibile)
-        textY = std::max(ts.height, std::min(textY, img.rows - 1));
+        // Horizontal clamp for safety (prevents going outside the image)
+        textX = max(0, min(textX, img.cols - ts.width));
+        // Minimum vertical clamp (ensures the baseline is visible)
+        textY = max(ts.height, min(textY, img.rows - 1));
 
-        cv::putText(img, txt, cv::Point(textX, textY),
-                    fontFace, fontScale, color, textThickness, lineType);
+        putText(img, txt, Point(textX, textY),
+                    font_face, font_scale, color, text_thickness, type_of_line);
     }
 
     image_and_ROI.set_pic(img);
     return image_and_ROI;
 }
+
