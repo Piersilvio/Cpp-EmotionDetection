@@ -11,4 +11,7 @@ inline const std::string HAAR_CASCADE_FRONTALFACE_PATH   = "../models/haarcascad
 inline const std::string HAAR_CASCADE_PROFILEFACE_PATH    = "../models/haarcascade_profileface.xml";
 inline const std::string OUTPUT_DIR               = "../output";
 
+// Settings for resizing windows for images that are too large
+const int WIN_W = 1280, WIN_H = 720;    
+
 #endif //CONFIG_H
