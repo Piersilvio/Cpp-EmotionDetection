@@ -3,9 +3,9 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-
+#include <opencv2/opencv.hpp>
 #include <string>
-
+#include <vector> 
 
 /*
  *  Processes a single image:
@@ -21,7 +21,10 @@ void process_image(const std::string& image_file, const std::string& labels_fold
                    int& total_detected_faces, int& total_correct_emotions,
                    const std::string& window_name);
 
-
+// Map bounding boxes to window coordinates
+std::vector<cv::Rect> map_bounding_boxes(std::vector<cv::Rect> boxes,
+                                         int offX, int offY,
+                                         double scale);
 
 
 #endif //PIPELINE_H

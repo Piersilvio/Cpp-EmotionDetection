@@ -16,19 +16,33 @@
 using namespace std;
 using namespace cv;
 
-void process_image(const std::string& image_file, const std::string& labels_folder,
-                   int& total_detected_faces, int& total_correct_emotions,
-                   const std::string& window_name) {
 
-    cv::Mat image = cv::imread(image_file);
+std::vector<cv::Rect> map_bounding_boxes(std::vector<cv::Rect> boxes,
+                                         int offX, int offY,
+                                         double scale) {   
+    for (auto& r : boxes) {
+        r.x      = cvRound(offX + r.x * scale);
+        r.y      = cvRound(offY + r.y * scale);
+        r.width  = cvRound(r.width  * scale);
+        r.height = cvRound(r.height * scale);
+    }
+    return boxes;
+}
+
+
+void process_image(const string& image_file, const string& labels_folder,
+                   int& total_detected_faces, int& total_correct_emotions,
+                   const string& window_name) {
+
+    Mat image = imread(image_file);
     if (image.empty()) {
-        std::cout << "Error loading image " << image_file << std::endl;
+        cout << "Error loading image " << image_file << endl;
         return;
     }
 
     // Read ground truth
-    std::string img_name = std::filesystem::path(image_file).stem().string();
-    std::string label_file = labels_folder + "/" + img_name + ".txt";
+    string img_name = filesystem::path(image_file).stem().string();
+    string label_file = labels_folder + "/" + img_name + ".txt";
     std::vector<cv::Rect> gt_boxes = read_ground_truth(label_file, image.cols, image.rows);
     draw_ground_truth(image, gt_boxes);
 
@@ -37,11 +51,11 @@ void process_image(const std::string& image_file, const std::string& labels_fold
     // Face detection
     std::vector<cv::Rect> detected_faces = detect_face(image, ground_truth_faces);
 
-    // Estrazione ROI e (nel codice esistente) disegno box sull'immagine operativa
+    // ROI extraction and (in the existing code) drawing boxes on the working image
     Image image_and_ROI = draw_face_box(image);
 
-    std::vector<cv::Mat> roi_image = image_and_ROI.get_ROI();
-    std::vector<std::string> emotion_prediction;
+    vector<Mat> roi_image = image_and_ROI.get_ROI();
+    vector<string> emotion_prediction;
 
     if (!roi_image.empty()) {
         preprocessROI(roi_image, image_and_ROI);
@@ -55,20 +69,20 @@ void process_image(const std::string& image_file, const std::string& labels_fold
 
     DetectionEval det = evaluate_detection(predicted_faces, gt_boxes, iou_threshold);
 
-    std::cout << "\nImage: " << image_file << std::endl;
-    std::cout << "TP: " << det.tp << ", FP: " << det.fp << ", FN: " << det.fn << std::endl;
-    std::cout << "Precision: " << det.precision << ", Recall: " << det.recall
-              << ", Mean IoU: " << det.mean_iou << std::endl;
+    cout << "\nImage: " << image_file << endl;
+    cout << "TP: " << det.tp << ", FP: " << det.fp << ", FN: " << det.fn << endl;
+    cout << "Precision: " << det.precision << ", Recall: " << det.recall
+         << ", Mean IoU: " << det.mean_iou << endl;
 
     // Emotion evaluation
     if (!emotion_prediction.empty()) {
-        std::string gt_label = extract_gt_label(image_file);
-        std::string gt_norm = normalize_label(gt_label);
+        string gt_label = extract_gt_label(image_file);
+        string gt_norm = normalize_label(gt_label);
 
         int correct = 0;
         int total = 0;
 
-        std::cout << "Predicted faces compared with GT (excluding FP):" << std::endl;
+        cout << "Predicted faces compared with GT (excluding FP):" << endl;
 
         for (size_t i = 0; i < predicted_faces.size(); i++) {
             float best_iou = 0.0f;
@@ -78,8 +92,8 @@ void process_image(const std::string& image_file, const std::string& labels_fold
             }
 
             if (best_iou > iou_threshold) {
-                std::string pred_norm = normalize_label(clean_pred_label(emotion_prediction[i]));
-                std::cout << "  Prediction: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << std::endl;
+                string pred_norm = normalize_label(clean_pred_label(emotion_prediction[i]));
+                cout << "  Prediction: '" << pred_norm << "'  | GT: '" << gt_norm << "'" << endl;
                 total++;
                 total_detected_faces++;
                 if (pred_norm == gt_norm) {
@@ -90,101 +104,87 @@ void process_image(const std::string& image_file, const std::string& labels_fold
         }
 
         float emotion_accuracy = total > 0 ? static_cast<float>(correct) / total : 0.0f;
-        std::cout << "Emotion recognition - correct: " << correct << "/" << total
-                  << " (Accuracy: " << emotion_accuracy << ")" << std::endl;
+        cout << "Emotion recognition - correct: " << correct << "/" << total
+             << " (Accuracy: " << emotion_accuracy << ")" << endl;
     }
 
-    cv::Mat output_image = image_and_ROI.get_pic();
+    Mat output_image = image_and_ROI.get_pic();
 
     /* =====================  GUI compose (NEW)  ===================== */
     {
         const int WIN_W = 1280, WIN_H = 720;
 
-        // Calcola la trasformazione (stessa logica di WINDOW_KEEPRATIO)
+        // Compute the transform (same logic as WINDOW_KEEPRATIO)
         const double sx = WIN_W / static_cast<double>(image.cols);
         const double sy = WIN_H / static_cast<double>(image.rows);
-        const double scale = std::min(sx, sy);
-        const int dispW = std::max(1, cvRound(image.cols * scale));
-        const int dispH = std::max(1, cvRound(image.rows * scale));
+        const double scale = min(sx, sy);
+        const int dispW = max(1, cvRound(image.cols * scale));
+        const int dispH = max(1, cvRound(image.rows * scale));
         const int offX  = (WIN_W - dispW) / 2;
         const int offY  = (WIN_H - dispH) / 2;
 
-        // Canvas pulito: rilegge l'immagine originale per evitare overlay preesistenti
-        cv::Mat base = cv::imread(image_file);
+        // Clean canvas: reload the original image to avoid pre-existing overlays
+        Mat base = imread(image_file);
         if (base.empty()) base = image.clone();
-        cv::Mat vis(WIN_H, WIN_W, base.type(), cv::Scalar::all(0));
+        Mat vis(WIN_H, WIN_W, base.type(), Scalar::all(0));
 
-        const int interp = (scale < 1.0) ? cv::INTER_AREA : cv::INTER_LINEAR;
-        cv::Mat resized;
-        cv::resize(base, resized, cv::Size(dispW, dispH), 0, 0, interp);
-        resized.copyTo(vis(cv::Rect(offX, offY, dispW, dispH)));
+        const int interp = (scale < 1.0) ? INTER_AREA : INTER_LINEAR;
+        Mat resized;
+        resize(base, resized, Size(dispW, dispH), 0, 0, interp);
+        resized.copyTo(vis(Rect(offX, offY, dispW, dispH)));
 
-        // Mappa le bbox della detection alle coordinate finestra
+        // Map faces bounding boxes to window coordinates
         std::vector<cv::Rect> faces_gui = detected_faces;
-        for (auto& r : faces_gui) {
-            r.x      = cvRound(offX + r.x * scale);
-            r.y      = cvRound(offY + r.y * scale);
-            r.width  = cvRound(r.width  * scale);
-            r.height = cvRound(r.height * scale);
-        }
-
-        // mappa le GT se vuoi visualizzarle
+        faces_gui = map_bounding_boxes(faces_gui, offX, offY, scale);
+       
+        // Map GT boxes to window coordinates
         std::vector<cv::Rect> gt_gui = gt_boxes;
-        for (auto& r : gt_gui) {
-            r.x      = cvRound(offX + r.x * scale);
-            r.y      = cvRound(offY + r.y * scale);
-            r.width  = cvRound(r.width  * scale);
-            r.height = cvRound(r.height * scale);
-        }
+        gt_gui = map_bounding_boxes(gt_gui, offX, offY, scale);
 
-        // Disegno box + etichette nel canvas a risoluzione finestra
-        #ifdef CV_AA
-            const int lineType = CV_AA;      // OpenCV 2.x
-        #else
-            const int lineType = cv::LINE_AA;
-        #endif
+        // Draw boxes + labels on the window-resolution canvas
+        const int lineType = LINE_AA;
 
         draw_ground_truth(vis, gt_gui);    
     
         Image canvasWrap;
-        canvasWrap.set_pic(vis); // il canvas diventa l'immagine interna all'oggetto
+        canvasWrap.set_pic(vis); // the canvas becomes the internal image of the object
 
-        // Disegna rettangoli + etichette con i "colori originali"
+        // Draw rectangles + labels with the "original colors"
         canvasWrap = print_predicted_label(canvasWrap, emotion_prediction, faces_gui);
 
-        // Recupera il Mat disegnato
+        // Retrieve the drawn Mat
         vis = canvasWrap.get_pic();
  
-
-        // Da qui in poi usiamo 'vis' per salvare e mostrare
+        // From here on we use 'vis' to save and display
         output_image = vis;
     }
     /* ===================  end GUI compose (NEW)  =================== */
 
     // Saving of the image
     try {
-        namespace fs = std::filesystem;
+        namespace fs = filesystem;
         fs::create_directories(OUTPUT_DIR); // if it does not exist, create
 
-        const cv::Mat& annotated = output_image.empty() ? image : output_image; // fallback se qualcosa è andato storto
-        std::string base = fs::path(image_file).stem().string();
+        const Mat& annotated = output_image.empty() ? image : output_image; // fallback if something went wrong
+        string base = fs::path(image_file).stem().string();
         fs::path outPath = fs::path(OUTPUT_DIR) / (base + "_annotated.jpg");
 
-        std::vector<int> jpgParams = { cv::IMWRITE_JPEG_QUALITY, 95 };
-        if (cv::imwrite(outPath.string(), annotated, jpgParams)) {
-            std::cout << "Saved annotated image: " << outPath.string() << std::endl;
+        vector<int> jpgParams = { IMWRITE_JPEG_QUALITY, 95 };
+        if (imwrite(outPath.string(), annotated, jpgParams)) {
+            cout << "Saved annotated image: " << outPath.string() << endl;
         } else {
-            std::cerr << "Failed to save image: " << outPath.string() << std::endl;
+            cerr << "Failed to save image: " << outPath.string() << endl;
         }
 
-    } catch (const std::exception& e) {
-        std::cerr << "Save error: " << e.what() << std::endl;
+    } catch (const exception& e) {
+        cerr << "Save error: " << e.what() << endl;
     }
 
-    // Visualizzazione
-    if (!output_image.empty()) cv::imshow(window_name, output_image);
-    else                       cv::imshow(window_name, image);
+    // Display
+    if (!output_image.empty()) imshow(window_name, output_image);
+    else                       imshow(window_name, image);
 
-    std::cout << "Press any key to proceed to the next image..." << std::endl;
-    cv::waitKey(0);
+    cout << "Press any key to proceed to the next image..." << endl;
+    waitKey(0);
 }
+
