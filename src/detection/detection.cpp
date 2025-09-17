@@ -13,7 +13,7 @@ std::vector<Rect> detected_faces;
 vector<Scalar> colors = {
 Scalar(255, 0, 0),     // Blue
 Scalar(0, 255, 0),     // Green
-Scalar(0, 0, 255),     // Red
+Scalar(0, 0, 140),     // Modified Red
 Scalar(255, 255, 0),   // Cyan
 Scalar(255, 0, 255),   // Magenta
 Scalar(0, 255, 255),   // Yellow
