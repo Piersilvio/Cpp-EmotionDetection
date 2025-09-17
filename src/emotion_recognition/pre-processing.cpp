@@ -1,3 +1,5 @@
+// Author: Jacopo Onorati
+
 /*
  *  Pre-processing of the images containing ROIs
  */
