@@ -55,7 +55,7 @@ void process_image(const std::string& image_file, const std::string& labels_fold
 
     DetectionEval det = evaluate_detection(predicted_faces, gt_boxes, iou_threshold);
 
-    std::cout << "Image: " << image_file << std::endl;
+    std::cout << "\nImage: " << image_file << std::endl;
     std::cout << "TP: " << det.tp << ", FP: " << det.fp << ", FN: " << det.fn << std::endl;
     std::cout << "Precision: " << det.precision << ", Recall: " << det.recall
               << ", Mean IoU: " << det.mean_iou << std::endl;
