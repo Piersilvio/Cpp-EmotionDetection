@@ -4,12 +4,17 @@ project(FaceDetectionEmotionRecognition LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+set(ENV{OpenCV_DIR} "C:\\tools\\opencv\\build")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
 if (MSVC)
     add_compile_options(/Zc:__cplusplus)
 endif()
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs highgui dnn objdetect)
 message(STATUS "Found OpenCV ${OpenCV_VERSION}")
+
 
 add_executable(FaceDetectionEmotionRecognition
         src/Main.cpp
