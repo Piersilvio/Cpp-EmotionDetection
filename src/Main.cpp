@@ -39,7 +39,7 @@ int main() {
 
     // reduce the window size
     cv::setWindowProperty(WINDOW_NAME, cv::WND_PROP_ASPECT_RATIO, cv::WINDOW_KEEPRATIO);
-    cv::resizeWindow(WINDOW_NAME, 1280, 720);
+    cv::resizeWindow(WINDOW_NAME, WIN_W, WIN_H);
     cv::moveWindow(WINDOW_NAME, 100, 100);
 
     int total_detected_faces = 0;
