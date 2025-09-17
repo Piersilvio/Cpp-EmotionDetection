@@ -21,7 +21,7 @@ std::vector<Mat> Image::get_ROI() {
     return this->_roi_image;
 }
 
-// Add a new ROI image to the vector of ROIs.
+// Add a new ROI image to the vector .
 void Image::set_ROI(Mat& roi) {
     this->_roi_image.push_back(roi);
 }
