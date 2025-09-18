@@ -32,7 +32,6 @@ public:
     
 private:
     
-    // The image without ROIs
     cv::Mat _pic;   
     
     // Vector that contains images with Regions Of Interest (ROIs)  (an element for each detected ROI)
